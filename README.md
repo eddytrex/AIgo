@@ -1,22 +1,19 @@
 
-
-
-
-TODO
-  Matrix
+##TODO
+  -Matrix
     -Eigenvalues Values
     -Get Values form file
-  Basic operations on Polynomials
+  -Basic operations on Polynomials
     - Sum
     - Subtraction
     - Multiplication
-  Machine Learing
+  -Machine Learing
     -Gradient Descent 
       -Logic Regresion
       -Linear Regresion
-      -Non- Linear Regresion
+      -NonLinear Regresion
     -Normal Equation
-  ANN
+  -ANN
     -BackPropagation
     -ART2
   
