@@ -3,36 +3,28 @@ package main
 import (
   "fmt"
   "Matrix"
+  "MachineLearning"
+  //"ANN"
   
 )
 
 
 func main(){
-  
-  a:=Matrix.I(100)
  
-  a.SetValue(1,1,2)
-  a.SetValue(1,2,1)
-  a.SetValue(1,3,3)
   
-  a.SetValue(2,1,4)
-  a.SetValue(2,2,6)
-  a.SetValue(2,3,5)
+  a,er1:=Matrix.FromFile("/home/eddytrex/go/IAgo/src/xs.txt")
   
-  a.SetValue(3,1,7)
-  a.SetValue(3,2,8)
-  a.SetValue(3,3,9)
- 
-   
-  c:=a.Copy()
-   
-   i,_:=a.Inverse()
-  //i,_:=a.InverseGauss()
-     
-   //m:=Matrix.Multiplication(*c,*i)
-  m:=Matrix.Product(*c,*i)
+  b,er2:=Matrix.FromFile("/home/eddytrex/go/IAgo/src/ys.txt")
   
- 
-  fmt.Println("->",m.GetValue(1,1))
-   
+  fmt.Println(er1,"\n",er2)
+  
+  c,_:=Matrix.Sum(*a,*b)
+  fmt.Println(c.ToString(),">")
+  
+  //fmt.Println(b.ToString())
+  ts:=MachineLearning.MakeTrainingSet(*a,*b)
+  
+  hy:=MachineLearning.GradientDescent(0.0001,0.00000001,*ts)
+  
+  fmt.Println("->",hy)
 }

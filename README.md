@@ -2,16 +2,16 @@
 
 - Matrix
     - Eigenvalues Values
-    - Get Values form file
+    - Get Values form file 
 - Basic operations on Polynomials
     - Sum
     - Subtraction
     - Multiplication
 - Machine Learing
     - Gradient Descent 
-        - Logic Regresion
-        - Linear Regresion
-        - Non- Linear Regresion
+        - Logic Regression
+        - Linear Regression
+        - Non- Linear Regression
     - Normal Equation
 - ANN
     - BackPropagation
