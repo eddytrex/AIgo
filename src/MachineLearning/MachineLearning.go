@@ -2,7 +2,7 @@ package MachineLearning;
 import (
   "Matrix"
   "math"
-  
+  "errors" 
 )
 
 
@@ -22,8 +22,52 @@ func MakeTrainingSet(xs Matrix.Matrix,y Matrix.Matrix)(* TrainingSet){
   return nil
 }
 
+/*func (this *TrainingSet)MeanNormalize() {
+  
+  sum:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
+  max:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
+  min:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
+  
+  for i:=1;i<this.Xs.GetNRows();i++{
+    xsi:=this.Xs.GetRow(i);
+    sum=Matrix.Sum(xsi,sum)
+  }
+  sum.Scalar(1/(float64 this.Xs.GetNRows()))  
+}
+
+func (this *TrainingSet)sumParameters(i0,i1 int, max, min ,res *Matrix.Matrix ,done chan<-bool){
+  di:=i1-i0
+  done2:=make(chan bool,THRESHOLD)
+  if(di>=THRESHOLD)
+  {
+    mi:=i0+di/2
+       
+    res1:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
+    res2:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
+    
+    go this.sumParameters(i0,mi,res1,done2)    
+    
+    this.sumParameters(mi,i1,res2,done2)
+    
+    <-done2
+    <-done2
+    
+    res=Matrix.Sum(res1,res2) 
+  }else{
+    for i:=i0,i<i1;i++{
+      xsi:=this.Xs.GetRow(i)
+      res=Matrix.Sum(xsi,res)
+    }
+  }
+  done<-true
+}*/
+
 type Hypothesis struct{
   ThetaP Matrix.Matrix
+  M int
+  Sum Matrix.Matrix
+  Alpah int	
+  H func (float64)float64
 }
 
 
@@ -59,9 +103,6 @@ func (this *Hypothesis) ApplyHypothesisToTrainingSet(Ts TrainingSet) (*Matrix.Ma
   return nil
 }
 
-
-
-
 func (this *Hypothesis) Parallel_DiffH1Ys(Ts TrainingSet) (*Matrix.Matrix){
   m:=Ts.Xs.GetNRows()
   hx:=Matrix.NullMatrix(m,1)
@@ -80,7 +121,7 @@ func (this *Hypothesis) part_DiffH1Ys(i0,i1 int,Ts TrainingSet,Ret Matrix.Matrix
   done2:=make(chan bool,THRESHOLD);
 
   if(di>=THRESHOLD){
-    mi:=di/2
+    mi:=i0+di/2
     go this.part_DiffH1Ys(i0,mi,Ts,Ret,done2)
     this.part_DiffH1Ys(mi,i1,Ts,Ret,done2)
     <-done2
@@ -91,7 +132,7 @@ func (this *Hypothesis) part_DiffH1Ys(i0,i1 int,Ts TrainingSet,Ret Matrix.Matrix
 	
 	Thi:=Matrix.Product(*xi,*this.ThetaP.Transpose())
 	
-	Ret.SetValue(i,1,Thi.GetValue(1,1)-Ts.Y.GetValue(1,i))
+	Ret.SetValue(i,1,this.H(Thi.GetValue(1,1))-Ts.Y.GetValue(1,i))
       }
     }
     done<-true
@@ -119,21 +160,20 @@ func (this *Hypothesis) DiffH1Ys(Ts TrainingSet) (*Matrix.Matrix){
 }
 
 
+func LinearRegression(alpha float64,Tolerance float64,ts TrainingSet)( *Hypothesis){
+  f:=func (x float64)float64{return x}
+  hy:=GradientDescent(alpha,Tolerance,ts,f)
+  return hy
+}
 
-func (this *Hypothesis) ApplyHSigmoid(Ts TrainingSet)(*Matrix.Matrix){
-  
-  out:=this.ApplyHypothesisToTrainingSet(Ts)
-  
-  sigmoid:=func(z float64)float64{ return 1/(1+math.Exp(-z))}
-  
-  out=out.Apply(sigmoid)
-  
-  return out
+func LogisticRegression(alpha float64,Tolerance float64,ts TrainingSet)( *Hypothesis){
+  f:=func (x float64)float64{return 1/(1+math.Exp(-x))}
+  hy:=GradientDescent(alpha,Tolerance,ts,f)
+  return hy
 }
 
 
-
-func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet)( *Hypothesis){
+func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x float64)float64)( *Hypothesis){
  n:=ts.Xs.GetNColumns()
  m:=ts.Xs.GetNRows()
  
@@ -148,6 +188,7 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet)( *Hypothesi
  
  var h1 Hypothesis
  
+ h1.H=f
  h1.ThetaP=*thetaP           
  
  var Error float64
@@ -166,8 +207,9 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet)( *Hypothesi
     
     p:=Matrix.Product(*diffT,ts.Xs)                       //Sum( (hi(xi)-yi)*xij)  in vectro form 
     
-    scalar:=p.Scalar((-1)*alpha/float64(m))              //alfa/m*Sum( (hi(xi)-yi)*xij)
+    h1.Sum=*p
     
+    scalar:=p.Scalar((-1)*alpha/float64(m))              //alfa/m*Sum( (hi(xi)-yi)*xij)
     
     ThetaTemp,_:=Matrix.Sum(h1.ThetaP,*scalar)           //Theas=Theas-alfa/m*Sum( (hi(xi)-yi)*xij)  update the parameters   
     
@@ -176,9 +218,25 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet)( *Hypothesi
     diffError,_:=Matrix.Sustract(*ThetaPB,h1.ThetaP)      //diff between theta's Vector , calc the error
     
     Error=diffError.EuclideanNorm()		         //Euclidean Norm 
-    //Error=diffError.InfinityNorm()                     //Infinty Norm
+    //Error=diffError.InfinityNorm()                     //Infinty Norm  
+  
  }
- return &h1
-} 
+ h1.M=m
 
+ return &h1
+}
+
+func (this *Hypothesis) Evaluate(x *Matrix.Matrix) (float64,error){
+  x0:=Matrix.NullMatrix(1,1)
+  x0.SetValue(1,1,1);
+  x0=*x0.AddColumn(*x)
+  if(x0.GetNColumns()==this.ThetaP.GetNColumns()){
+      xt:=x0.Transpose()
+      res:=Matrix.Product(this.ThetaP,*xt);      
+      return this.H(res.GetValue(1,1)),nil
+  }  
+  return 0,errors.New(" the number of parameters is not equal to the parameters of the hypotesis")
+}
+
+ 
 
