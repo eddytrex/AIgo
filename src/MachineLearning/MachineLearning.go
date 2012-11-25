@@ -5,63 +5,6 @@ import (
   "errors" 
 )
 
-
-type TrainingSet struct{
-  Xs Matrix.Matrix   //Features    mxn   
-  Y   Matrix.Matrix  //Values      mx1
-}
-
-func MakeTrainingSet(xs Matrix.Matrix,y Matrix.Matrix)(* TrainingSet){
-  var out TrainingSet
-  
-  if(xs.GetNRows()==y.GetNRows()){
-  out.Xs=xs
-  out.Y=y
-  return &out
-  }
-  return nil
-}
-
-/*func (this *TrainingSet)MeanNormalize() {
-  
-  sum:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
-  max:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
-  min:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
-  
-  for i:=1;i<this.Xs.GetNRows();i++{
-    xsi:=this.Xs.GetRow(i);
-    sum=Matrix.Sum(xsi,sum)
-  }
-  sum.Scalar(1/(float64 this.Xs.GetNRows()))  
-}
-
-func (this *TrainingSet)sumParameters(i0,i1 int, max, min ,res *Matrix.Matrix ,done chan<-bool){
-  di:=i1-i0
-  done2:=make(chan bool,THRESHOLD)
-  if(di>=THRESHOLD)
-  {
-    mi:=i0+di/2
-       
-    res1:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
-    res2:=Matrix.NullMatrix(1,this.Xs.GetNColumns());
-    
-    go this.sumParameters(i0,mi,res1,done2)    
-    
-    this.sumParameters(mi,i1,res2,done2)
-    
-    <-done2
-    <-done2
-    
-    res=Matrix.Sum(res1,res2) 
-  }else{
-    for i:=i0,i<i1;i++{
-      xsi:=this.Xs.GetRow(i)
-      res=Matrix.Sum(xsi,res)
-    }
-  }
-  done<-true
-}*/
-
 type Hypothesis struct{
   ThetaP Matrix.Matrix
   M int
@@ -72,7 +15,7 @@ type Hypothesis struct{
 
 
 func (this *TrainingSet)AddX0(){
-  m:=this.Xs.GetNRows()
+  m:=this.Xs.GetMRows()
   x0:=Matrix.NullMatrix(m,1)
   
   for i:=1;i<=m;i++{
@@ -85,12 +28,12 @@ func (this *TrainingSet)AddX0(){
 
 func (this *Hypothesis) ApplyHypothesisToTrainingSet(Ts TrainingSet) (*Matrix.Matrix){
   
-  m:=Ts.Xs.GetNRows()
+  m:=Ts.Xs.GetMRows()
   
   hx:=Matrix.NullMatrix(m,1)
   
   if(this.ThetaP.GetNColumns()==Ts.Xs.GetNColumns()){
-  for i:=1;i<=Ts.Xs.GetNRows();i++{
+  for i:=1;i<=Ts.Xs.GetMRows();i++{
     xi:=Ts.Xs.GetRow(i);
     
     Thi:=Matrix.Product(*xi,*this.ThetaP.Transpose())
@@ -104,7 +47,7 @@ func (this *Hypothesis) ApplyHypothesisToTrainingSet(Ts TrainingSet) (*Matrix.Ma
 }
 
 func (this *Hypothesis) Parallel_DiffH1Ys(Ts TrainingSet) (*Matrix.Matrix){
-  m:=Ts.Xs.GetNRows()
+  m:=Ts.Xs.GetMRows()
   hx:=Matrix.NullMatrix(m,1)
   
   if(this.ThetaP.GetNColumns()==Ts.Xs.GetNColumns()){
@@ -141,12 +84,12 @@ func (this *Hypothesis) part_DiffH1Ys(i0,i1 int,Ts TrainingSet,Ret Matrix.Matrix
 
 func (this *Hypothesis) DiffH1Ys(Ts TrainingSet) (*Matrix.Matrix){
   
-  m:=Ts.Xs.GetNRows()
+  m:=Ts.Xs.GetMRows()
   
   hx:=Matrix.NullMatrix(m,1)
   
   if(this.ThetaP.GetNColumns()==Ts.Xs.GetNColumns()){
-  for i:=1;i<=Ts.Xs.GetNRows();i++{
+  for i:=1;i<=Ts.Xs.GetMRows();i++{
     xi:=Ts.Xs.GetRow(i);
     
     Thi:=Matrix.Product(*xi,*this.ThetaP.Transpose())
@@ -175,7 +118,7 @@ func LogisticRegression(alpha float64,Tolerance float64,ts TrainingSet)( *Hypoth
 
 func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x float64)float64)( *Hypothesis){
  n:=ts.Xs.GetNColumns()
- m:=ts.Xs.GetNRows()
+ m:=ts.Xs.GetMRows()
  
  //Xsc:=ts.Xs.Copy()
  
@@ -231,8 +174,11 @@ func (this *Hypothesis) Evaluate(x *Matrix.Matrix) (float64,error){
   x0.SetValue(1,1,1);
   x0=*x0.AddColumn(*x)
   if(x0.GetNColumns()==this.ThetaP.GetNColumns()){
+    
       xt:=x0.Transpose()
+      
       res:=Matrix.Product(this.ThetaP,*xt);      
+      
       return this.H(res.GetValue(1,1)),nil
   }  
   return 0,errors.New(" the number of parameters is not equal to the parameters of the hypotesis")
