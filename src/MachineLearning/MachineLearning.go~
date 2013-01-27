@@ -58,7 +58,7 @@ func (this *Hypothesis) Parallel_DiffH1Ys(Ts TrainingSet) (*Matrix.Matrix){
  return &hx 
 }
 
-const THRESHOLD=100
+const THRESHOLD=25
 func (this *Hypothesis) part_DiffH1Ys(i0,i1 int,Ts TrainingSet,Ret Matrix.Matrix,done chan<-bool){
   di:=i1-i0
   done2:=make(chan bool,THRESHOLD);

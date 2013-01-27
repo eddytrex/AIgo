@@ -31,6 +31,3 @@ func (this *Matrix) LUDesc()(L *Matrix, U *Matrix){
   return nil,nil
 }
 
-
-
-

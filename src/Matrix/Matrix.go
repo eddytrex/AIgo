@@ -192,11 +192,31 @@ func (this *Matrix) GetDiagonal() (*Matrix,error){
 // Apply the function (f) to all elements of the Matrix (
 func (this *Matrix) Apply(f func(float64)float64) *Matrix{
   out:=this.Copy()
-  for i:=0;i<len(out.A);i++{
+  done:=make(chan bool,THRESHOLD)
+  applyR(0,len(out.A),this,out,f,done)
+  <-done
+  /*for i:=0;i<len(out.A);i++{
     newVal:=f(out.A[i])
     out.A[i]=newVal
-  }
+  }*/
   return out
+}
+
+func applyR(i0,i1 int,C,out *Matrix,f func(float64)float64,done chan<-bool){
+  di:=(i1-i0)
+  done2:=make(chan bool,THRESHOLD)
+  if(di>=THRESHOLD){
+    mi:=i0+di/2
+    applyR(i0,mi,C,out,f,done2)
+    applyR(mi,i1,C,out,f,done2)
+    <-done2
+    <-done2
+  }else{
+    for i:=i0;i<i1;i++{
+      out.A[i]=f(C.A[i])
+    }
+  }
+  done<-true 
 }
 
 

@@ -28,7 +28,7 @@ func main(){
   //hy:=MachineLearning.GradientDescent(0.0001,0.00000001,*ts,func (a float64)float64{return a})
   
   //hy:=MachineLearning.LinearRegression(0.0001,0.0000001,*ts)
-  hy:=MachineLearning.LogisticRegression(0.1,0.0001,*ts)
+  hy:=MachineLearning.LogisticRegression(0.099,0.0001,*ts)
   
   fmt.Println("--->",hy)
   
