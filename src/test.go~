@@ -13,9 +13,9 @@ import (
 func main(){
  
   
-  a,er1:=Matrix.FromFile("/home/eddytrex/go/IAgo/src/xsl.txt")
+  a,er1:=Matrix.FromFile("xsl.txt")
   
-  b,er2:=Matrix.FromFile("/home/eddytrex/go/IAgo/src/ysl.txt")
+  b,er2:=Matrix.FromFile("ysl.txt")
   
   fmt.Println(er1,"\n",er2)
   
@@ -28,7 +28,7 @@ func main(){
   //hy:=MachineLearning.GradientDescent(0.0001,0.00000001,*ts,func (a float64)float64{return a})
   
   //hy:=MachineLearning.LinearRegression(0.0001,0.0000001,*ts)
-  hy:=MachineLearning.LogisticRegression(0.099,0.0001,*ts)
+  hy:=MachineLearning.LogisticRegression(0.1,0.0001,*ts)
   
   fmt.Println("--->",hy)
   

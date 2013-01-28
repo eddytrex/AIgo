@@ -13,9 +13,9 @@ import (
 func main(){
  
   
-  a,er1:=Matrix.FromFile("/home/eddytrex/go/IAgo/src/xsl.txt")
+  a,er1:=Matrix.FromFile("xsl.txt")
   
-  b,er2:=Matrix.FromFile("/home/eddytrex/go/IAgo/src/ysl.txt")
+  b,er2:=Matrix.FromFile("ysl.txt")
   
   fmt.Println(er1,"\n",er2)
   
@@ -40,25 +40,25 @@ func main(){
   ret,_:=hy.Evaluate(&t)
   
   
-  temp:=Matrix.NullMatrix(2,2)
-  temp2:=Matrix.NullMatrix(2,1)
-  
-  
-  temp2.SetValue(1,1,1)
-  temp2.SetValue(2,1,1)
+//   temp:=Matrix.NullMatrix(2,2)
+//   temp2:=Matrix.NullMatrix(2,1)
+//   
+//   
+//   temp2.SetValue(1,1,1)
+//   temp2.SetValue(2,1,1)
  
   
   fmt.Println("h()=",ret)
   
-  temp.SetColumn(1,temp2)
+//   temp.SetColumn(1,temp2)
+//   
+//   temp2.SetValue(1,1,3)
+//   temp2.SetValue(2,1,4)
+//   
+//   temp.SetColumn(2,temp2)
+//   
+//   temp3:=temp2.UnitVector()
   
-  temp2.SetValue(1,1,3)
-  temp2.SetValue(2,1,4)
-  
-  temp.SetColumn(2,temp2)
-  
-  temp3:=temp2.UnitVector()
-  
-  fmt.Println("---",temp.ToString())
-  fmt.Println("---",temp3.ToString())
+//   fmt.Println("---",temp.ToString())
+//   fmt.Println("---",temp3.ToString())
 }
