@@ -46,27 +46,28 @@ func (this *Hypothesis) ApplyHypothesisToTrainingSet(Ts TrainingSet) (*Matrix.Ma
   return nil
 }
 
-func (this *Hypothesis) Parallel_DiffH1Ys(Ts TrainingSet) (*Matrix.Matrix){
+func (this *Hypothesis) Parallel_DiffH1Ys(Ts TrainingSet) (*Matrix.Matrix, *Matrix.Matrix){
   m:=Ts.Xs.GetMRows()
   hx:=Matrix.NullMatrix(m,1)
+  hxt:=Matrix.NullMatrix(1,m)
   
   if(this.ThetaP.GetNColumns()==Ts.Xs.GetNColumns()){
       done:=make(chan bool);
-      go this.part_DiffH1Ys(1,m,Ts,hx,done)
+      go this.part_DiffH1Ys(1,m,Ts,hx,hxt,done)
       <-done
   }
- return &hx 
+ return &hx,&hxt 
 }
 
 const THRESHOLD=100
-func (this *Hypothesis) part_DiffH1Ys(i0,i1 int,Ts TrainingSet,Ret Matrix.Matrix,done chan<-bool){
+func (this *Hypothesis) part_DiffH1Ys(i0,i1 int,Ts TrainingSet,Ret Matrix.Matrix,RetT Matrix.Matrix,done chan<-bool){
   di:=i1-i0
   done2:=make(chan bool,THRESHOLD);
-
+  
   if(di>=THRESHOLD){
     mi:=i0+di/2
-    go this.part_DiffH1Ys(i0,mi,Ts,Ret,done2)
-    this.part_DiffH1Ys(mi,i1,Ts,Ret,done2)
+    go this.part_DiffH1Ys(i0,mi,Ts,Ret,RetT,done2)
+    go this.part_DiffH1Ys(mi,i1,Ts,Ret,RetT,done2)
     <-done2
     <-done2
   }else{
@@ -74,8 +75,9 @@ func (this *Hypothesis) part_DiffH1Ys(i0,i1 int,Ts TrainingSet,Ret Matrix.Matrix
 	xi:=Ts.Xs.GetRow(i)
 	
 	Thi:=Matrix.Product(*xi,*this.ThetaP.Transpose())
-	
-	Ret.SetValue(i,1,this.H(Thi.GetValue(1,1))-Ts.Y.GetValue(1,i))
+	temp:=this.H(Thi.GetValue(1,1))-Ts.Y.GetValue(1,i)
+	Ret.SetValue(i,1,temp);
+        RetT.SetValue(1,i,temp);
       }
     }
     done<-true
@@ -140,6 +142,7 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
  
  Error=1.0
  
+ var it=1
  
  for Error>=Tolerance{                        // Until converges
     
@@ -147,15 +150,19 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
     
     //diff,_:=Matrix.Sustract(*h1.ApplyHypothesisToTrainingSet(ts),ts.Y) //    h(x)-y
     //diff:=h1.DiffH1Ys(ts)
-    diff:=h1.Parallel_DiffH1Ys(ts)                                            //h(x)-y
+    _,diffT:=h1.Parallel_DiffH1Ys(ts)                                            //h(x)-y
     
-    diffT:=diff.Transpose();
+    //diffT:=diff.Transpose();
     
     p:=Matrix.Product(*diffT,ts.Xs)                       //Sum( (hi(xi)-yi)*xij)  in matrix form 
     
     h1.Sum=*p
     
+    //alpha_it:=alpha/(math.Sqrt(float64(it)))
+    
     scalar:=p.Scalar(alpham)              //-alpha/m*Sum( (hi(xi)-yi)*xij)
+    
+    //scalar=p.Scalar(-alpha_it/float64(m))
     
     ThetaTemp,_:=Matrix.Sum(h1.ThetaP,*scalar)           //Theas=Theas-alfa/m*Sum( (hi(xi)-yi)*xij)  update the parameters   
     
@@ -165,10 +172,10 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
     
     Error=diffError.FrobeniusNorm()		         //Frobenius Norm 
     //Error=diffError.InfinityNorm()                     //Infinty Norm  
-  
+    it++;
  }
  h1.M=m
-
+println(it)
  return &h1
 }
 

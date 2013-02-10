@@ -13,9 +13,9 @@ import (
 func main(){
  
   
-  a,er1:=Matrix.FromFile("xsl.txt")
+  a,er1:=Matrix.FromFile("xs.txt")
   
-  b,er2:=Matrix.FromFile("ysl.txt")
+  b,er2:=Matrix.FromFile("ys.txt")
   
   fmt.Println(er1,"\n",er2)
   
@@ -27,15 +27,16 @@ func main(){
   
   //hy:=MachineLearning.GradientDescent(0.0001,0.00000001,*ts,func (a float64)float64{return a})
   
-  //hy:=MachineLearning.LinearRegression(0.0001,0.0000001,*ts)
-  hy:=MachineLearning.LogisticRegression(0.1,0.0001,*ts)
+  hy:=MachineLearning.LinearRegression(0.0001,0.0001,*ts)
+  //hy:=MachineLearning.LinearRegression(0.1,0.001,*ts)
+  //hy:=MachineLearning.LogisticRegression(4,0.0001,*ts)
   
   fmt.Println("--->",hy)
   
   t:=Matrix.NullMatrix(1,2)
   
-  t.SetValue(1,1,60)
-  t.SetValue(1,2,60)
+  t.SetValue(1,1,51)
+  t.SetValue(1,2,51)
   
   ret,_:=hy.Evaluate(&t)
   
