@@ -9,7 +9,7 @@ type Hypothesis struct{
   ThetaP Matrix.Matrix
   M int
   Sum Matrix.Matrix
-  Alpah int	
+  
   H func (float64)float64
 }
 
@@ -138,31 +138,37 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
  
  var Error float64
  
- alpham:=(-1)*alpha/float64(m)
+ 
  
  Error=1.0
  
  var it=1
+
+ diferencia,diferenciaT:=h1.Parallel_DiffH1Ys(ts)
+ jt:=Matrix.Product(*diferenciaT,*diferencia).Scalar(1/float64(2*m)).GetValue(1,1);
+ 
+ print (1/jt)
+ alpha=1/jt
+ 
  
  for Error>=Tolerance{                        // Until converges
     
     ThetaPB:=h1.ThetaP.Copy()                //for Error Calc
-    
+       
     //diff,_:=Matrix.Sustract(*h1.ApplyHypothesisToTrainingSet(ts),ts.Y) //    h(x)-y
     //diff:=h1.DiffH1Ys(ts)
     _,diffT:=h1.Parallel_DiffH1Ys(ts)                                            //h(x)-y
-    
-    //diffT:=diff.Transpose();
+   
     
     p:=Matrix.Product(*diffT,ts.Xs)                       //Sum( (hi(xi)-yi)*xij)  in matrix form 
     
     h1.Sum=*p
     
-    //alpha_it:=alpha/(math.Sqrt(float64(it)))
+    alpha_it:=alpha/(math.Sqrt(float64(it)))
     
-    scalar:=p.Scalar(alpham)              //-alpha/m*Sum( (hi(xi)-yi)*xij)
+    //scalar:=p.Scalar(alpham)              //-alpha/m*Sum( (hi(xi)-yi)*xij)
     
-    //scalar=p.Scalar(-alpha_it/float64(m))
+    scalar:=p.Scalar(-alpha_it/float64(m))
     
     ThetaTemp,_:=Matrix.Sum(h1.ThetaP,*scalar)           //Theas=Theas-alfa/m*Sum( (hi(xi)-yi)*xij)  update the parameters   
     
@@ -175,7 +181,7 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
     it++;
  }
  h1.M=m
-println(it)
+println("No iteraciones ",it)
  return &h1
 }
 
@@ -196,3 +202,28 @@ func (this *Hypothesis) Evaluate(x *Matrix.Matrix) (float64,error){
 
  
 
+func NormalEquation(ts TrainingSet)(*Hypothesis){
+//     n:=ts.Xs.GetNColumns()
+//     m:=ts.Xs.GetMRows()
+     ts.AddX0()
+  
+   
+   
+    xTranspose:=ts.Xs.Transpose()
+    mult:=Matrix.Product(*xTranspose,ts.Xs);
+    
+    pinv:=mult.PInverse()
+        
+     //multI:=Matrix.Product(*mult,*inv)
+ 
+     
+    xT:=Matrix.Product(*pinv,*xTranspose)
+    theta:=Matrix.Product(*xT,ts.Y);
+    
+    var h1 Hypothesis
+    
+    h1.ThetaP=*theta
+    return &h1
+    
+}
+ 

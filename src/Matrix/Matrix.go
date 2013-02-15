@@ -4,12 +4,13 @@ import(
   "errors"
   "strconv"
   "math/rand"
-  //"math"
+  "math"
   //"fmt"
   "time"
   "text/scanner"
   "os"
   "bufio"
+  "strings"
  
 )
 
@@ -60,10 +61,9 @@ func RandomMatrix(m,n int)*Matrix{
   rand.Seed(time.Now().UTC().UnixNano())
   for i:=1;i<=out.m;i++{
     for j:=1;j<=out.n;j++{
+    
       
-      NumeroAleaotrio:=rand.Float64()*10
-      
-      out.SetValue(i,j,NumeroAleaotrio)
+      out.SetValue(i,j,rand.Float64()*10)
       
     }
   }
@@ -78,7 +78,7 @@ func (this *Matrix)ToString() string{
   if(this!=nil){
   for i:=0;i<this.m;i++{
     for j:=0;j<this.n;j++ {      
-      out=out+" "+strconv.FormatFloat(this.A[i*this.n+j],'f',6,64)
+      out=out+"\t "+strconv.FormatFloat(this.A[i*this.n+j],'f',6,64)
     }
     out=out+"\n"
   }
@@ -207,7 +207,7 @@ func applyR(i0,i1 int,C,out *Matrix,f func(float64)float64,done chan<-bool){
   done2:=make(chan bool,THRESHOLD)
   if(di>=THRESHOLD){
     mi:=i0+di/2
-    applyR(i0,mi,C,out,f,done2)
+    go applyR(i0,mi,C,out,f,done2)
     applyR(mi,i1,C,out,f,done2)
     <-done2
     <-done2
@@ -249,18 +249,22 @@ func FromFile(nameFile string)(*Matrix,error){
     column=0
     var row int
     row=1
+    sign:=1.0
     f := bufio.NewReader(ff) 
     var s scanner.Scanner
 	s.Init(f)
 	s.Whitespace=1<<'\t'  | 1<<' ';
 	tok:=s.Scan()
 	 for (tok!=scanner.EOF){
+             
+              
 	    if(tok==scanner.Float||tok==scanner.Int){
 	      
 	      svalue:=s.TokenText()
 	      fvalue,_:=strconv.ParseFloat(svalue,64)
+              fvalue=sign*fvalue;
 	      fout=append(fout,fvalue)
-	      
+	      sign=1
 	      columni++
 	      state=1
 	      
@@ -279,7 +283,9 @@ func FromFile(nameFile string)(*Matrix,error){
 	      er=errors.New(" Malformed File ") 
 	      
 	      break
-	    }else {
+	    }else if (strings.Contains(scanner.TokenString(tok),"-")){
+                sign=-1*sign;
+            }else {
 	      er=errors.New(" Malformed File ") 
 	      break
 	    }
@@ -291,4 +297,53 @@ func FromFile(nameFile string)(*Matrix,error){
 	  out:=NullMatrix(row,column)
 	  out.A=fout
 	  return &out,nil
+}
+
+
+
+
+
+
+func (this *Matrix) GaussElimitation(Aum *Matrix)(*Matrix, error){
+  if(this.n==this.m&&Aum.m==this.m){
+    //Aum:=I(this.n)
+    
+    
+    for i:=1;i<=this.m;i++{
+       
+        j:=i
+        for k:=i;k<=this.m;k++{
+          if (math.Abs(this.GetValue(k,i))>math.Abs(this.GetValue(j,i))){
+            j=k
+          }
+        }
+        if j!=i{
+          this.SwapRow(i,j)
+          Aum.SwapRow(i,j)
+        }
+
+        if(this.GetValue(i,i)==0){
+            
+          
+          return nil,errors.New(" Singualr Matrix")
+        }       
+      
+        Thisii:=this.GetValue(i,i)
+        Tii:=1/Thisii
+        
+        this.ScalarRow(i,Tii)
+        Aum.ScalarRow(i,Tii)
+        
+        for k:=1;k<=this.m;k++{
+          
+          if( k!=i ){
+              C:=-this.GetValue(k,i);
+              this.ScalarRowAndAdd(k,i,C)
+              Aum.ScalarRowAndAdd(k,i,C)   
+          }
+        }
+    }
+    return Aum,nil
+  }
+  return nil,errors.New(" the Matrix is not Square ")
 }

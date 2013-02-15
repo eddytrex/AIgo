@@ -2,7 +2,7 @@ package Matrix
 
 
 // LU Decomposition of a Matrix 
-func (this *Matrix) LUDesc()(L *Matrix, U *Matrix){
+func (this *Matrix) LUDec()(L *Matrix, U *Matrix){
   if(this.m==this.n){
    U:=this.Copy()
    L:=I(this.n)	    
@@ -31,3 +31,81 @@ func (this *Matrix) LUDesc()(L *Matrix, U *Matrix){
   return nil,nil
 }
 
+// QR Decomposition using  Householder reflections
+
+func (this *Matrix)QRDec()(Q1,R1 *Matrix){
+    Q:=NullMatrix(this.m,this.n)
+    R:=NullMatrix(this.m,this.n)
+    var first=true;
+    var alpha float64
+    var Qp *Matrix
+    Ai:=this.Copy()
+    for i:=1;i<this.m;i++{
+        
+        X:=Ai.GetColumn(i)
+        
+        e:=NullMatrix(X.m,1)
+        e.SetValue(i,1,1)
+        
+        x1:=X.GetValue(i,1)
+
+        if(x1>0){
+           alpha=-abs(X.FrobeniusNorm())
+        }else{
+          alpha=abs(X.FrobeniusNorm())
+        }
+        
+        u,_:=Sustract(*X,*e.Scalar(alpha))        
+        v:=u.UnitVector();
+
+        Qi,_:=v.HouseholderTrasformation() 
+        
+        
+        if(first){
+            Qp=Product(*Qi,*this)
+            Q=*Qi
+            
+            first=false;
+        }else{         
+            Q=*Product(Q,*Qi)
+            Qp=Product(*Qi,*Ai)
+        }
+        
+        for l:=1;l<=i;l++{
+            Qp=Qp.SubMatrix(1,1)
+        }
+        
+        Qp=SetSubMatrixToI(this.n,i+1,Qp)        
+        Ai=Qp
+    }
+    
+    R=*Product(*Q.Transpose(),*this)
+    
+    
+    return &Q,&R
+}
+
+
+func SetSubMatrixToI(n int,posI int ,pQ *Matrix)(*Matrix){
+    out:=I(n);
+    
+    if(posI<n&&(posI+pQ.n-1)==n){
+        
+        if(pQ.m<n){         
+            setMatrix:=NullMatrix((n-pQ.m),pQ.n)
+            pQ=pQ.AddRowsToTop(setMatrix)
+            
+            for i:=1;i<=pQ.n;i++{
+                ci:=pQ.GetColumn(i);
+                out.SetColumn(i+posI-1,*ci)
+            }
+            
+        }else if(pQ.m==n){
+            
+            return pQ
+        }
+        return out
+    }
+    
+    return nil
+}

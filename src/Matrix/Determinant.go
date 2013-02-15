@@ -4,8 +4,8 @@ import (
   "errors"
 )
 
-// Return the Matrix adjoint Matrix(this) of the position i,j
-func (this *Matrix)AdjMatrix(i,j int) *Matrix{
+// Return the Matrix submatrix Matrix(this) of the position i,j
+func (this *Matrix)SubMatrix(i,j int) *Matrix{
   out:=this.MatrixWithoutRow(i).MatrixWithoutColumn(j)
   return out
 }
@@ -22,7 +22,7 @@ func (this *Matrix)Det_LapaceExpasion()(float64,error){
       sum=0
 	for i:=1;i<=this.m;i++{
 	  
-	 temp,_:=this.AdjMatrix(1,i).Det_LapaceExpasion()
+	 temp,_:=this.SubMatrix(1,i).Det_LapaceExpasion()
 	 
 	 if(i%2!=0){
 	   
@@ -44,7 +44,7 @@ func (this *Matrix)Det_LapaceExpasion()(float64,error){
 func (this *Matrix) Det_LU()(float64,error){
   
   if(this.GetMRows()==this.GetNColumns()){
-  _,U:=this.LUDesc()  
+  _,U:=this.LUDec()  
   
   var Det float64
   Det=1

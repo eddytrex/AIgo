@@ -3,6 +3,7 @@ package Matrix
 import(
   "errors"
   "math"
+  "fmt"
 )
 
 // return a Matrix with zero  in all positions and m,n dimensions
@@ -44,7 +45,7 @@ func scalarR(i0,i1 int,c float64,A,C Matrix,done chan <-bool ){
   if(di>=THRESHOLD){
     mi:=i0+di/2
     go scalarR(i0,mi,c,A,C,done2)
-    go scalarR(mi,i1,c,A,C,done2)
+     scalarR(mi,i1,c,A,C,done2)
     <-done2
     <-done2
   }else{
@@ -136,7 +137,7 @@ func sustractR(i0,i1 int,A,B,C Matrix,done chan <-bool ){
   if(di>=THRESHOLD){
     mi:=i0+di/2
     go sustractR(i0,mi,A,B,C,done2)
-    go sustractR(mi,i1,A,B,C,done2)
+    sustractR(mi,i1,A,B,C,done2)
     <-done2
     <-done2
   }else{
@@ -184,19 +185,19 @@ func multr(A,B,C Matrix,i0,i1,j0,j1,k0,k1 int,done chan <-bool){
   if(di>=dj&&dj>=dk&&di>=THRESHOLD){
       mi:=i0+di/2
       go multr(A,B,C,i0,mi,j0,j1,k0,k1,done2)
-      go multr(A,B,C,mi,i1,j0,j1,k0,k1,done2)
+       multr(A,B,C,mi,i1,j0,j1,k0,k1,done2)
       <-done2
       <-done2
   }else if ( dj>=dk&&dj>=THRESHOLD){
       mj:=j0+dj/2
       go multr(A,B,C,i0,i1,j0,mj,k0,k1,done2)
-      go multr(A,B,C,i0,i1,mj,j1,k0,k1,done2)
+       multr(A,B,C,i0,i1,mj,j1,k0,k1,done2)
       <-done2
       <-done2
   }else if (dk>=THRESHOLD){
       mk:=k0+dk/2
       go multr(A,B,C,i0,i1,j0,j1,k0,mk,done2)
-      go multr(A,B,C,i0,i1,j0,j1,mk,k1,done2)
+       multr(A,B,C,i0,i1,j0,j1,mk,k1,done2)
       <-done2
       <-done2
   }else{    
@@ -226,7 +227,7 @@ func  Multiplication(A,B Matrix) *Matrix{
      for k:=1;k<=B.n;k++{
       
       go out.multRowColumn(i,k,A,B,mult)
-      go out.setCValue(i,k,mult,done)
+       out.setCValue(i,k,mult,done)
       <-done
     }
   }
@@ -279,14 +280,14 @@ func (this *Matrix) parallel_Traspose(i0,i1,j0,j1 int, res Matrix,done chan<-boo
   if(di>=dj&&di>=THRESHOLD){
       mi:=i0+di/2
       go this.parallel_Traspose(i0,mi,j0,j1,res,done2)
-      go this.parallel_Traspose(mi,i1,j0,j1,res,done2)
+       this.parallel_Traspose(mi,i1,j0,j1,res,done2)
       <-done2
       <-done2
   }else if (dj>=THRESHOLD){
       mj:=j0+dj/2
       
       go this.parallel_Traspose(i0,i1,j0,mj,res,done2)
-      go this.parallel_Traspose(i0,i1,mj,i1,res,done2)
+       this.parallel_Traspose(i0,i1,mj,i1,res,done2)
       <-done2
       <-done2
   }else{
@@ -344,7 +345,7 @@ func (this *Matrix)Inverse() (*Matrix,error){
   out:=NullMatrix(this.m,this.n)
   var newOutA []float64
   if(this.n==this.m){  
-  l,u:=this.LUDesc()
+  l,u:=this.LUDec()
   
   for i:=1;i<=this.m;i++{
     column:=NullMatrix(this.m,1)
@@ -353,16 +354,37 @@ func (this *Matrix)Inverse() (*Matrix,error){
     z:=l.fSubs(column)
     b:=u.bSubs(*z)   
     newOutA=append(newOutA,b.A[:]...)
-
+    
     }
     
   }else{
     return nil,errors.New(" the Matrix has to be square")
   }
+ 
   out.A=newOutA
   out=*out.Transpose()
  return &out,nil 
 }
+
+func (this *Matrix) PInverse()(*Matrix) {
+    if(this.n==this.m){
+        _,R:=this.QRDec()
+        
+        println("temp",this.ToString(),R.Transpose().ToString())
+        
+        temp1,err:=R.Transpose().GaussElimitation(this.Transpose())
+        fmt.Println("Error joder")
+        if(err==nil){
+        temp2,_:=R.GaussElimitation(temp1)
+        return temp2
+        }
+        
+        
+        
+    }
+    return nil
+}
+
 
 
 //Solve by forward substitution method for L Matrix in Inverse
@@ -408,6 +430,7 @@ func (this *Matrix) bSubs(B  Matrix)*Matrix{
   }
   return &out
 }
+
 
 // In a Matrix to Matrix with dimensions A (nxm) and B(n1xm1) return a Matrix C(n*n1xm*m1) 
 // with a elements Ci=Aij*B 
