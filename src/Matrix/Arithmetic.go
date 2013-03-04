@@ -3,8 +3,18 @@ package Matrix
 import(
   "errors"
   "math"
-  "fmt"
+//   "fmt"
 )
+
+
+func NullMatrixP(m int, n int)(*Matrix){
+  A:=make([]float64,m*n,m*n)
+  var out Matrix 
+  out.A=A
+  out.m=m
+  out.n=n
+  return &out
+}
 
 // return a Matrix with zero  in all positions and m,n dimensions
 func NullMatrix(m int, n int)Matrix{
@@ -18,28 +28,28 @@ func NullMatrix(m int, n int)Matrix{
 
 // return a square Matrix nxn  and one's in the main diagonal 
 func I(n int)*Matrix{
-  out:=NullMatrix(n,n)
+  out:=NullMatrixP(n,n)
   j:=0
   for i:=0;i<len(out.A);i=i+out.m{
     out.A[i+j]=1
     j++
   }
-  return &out
+  return out
 }
 
 // Multiply a Matrix for a scalar   cA
 func (this *Matrix)Scalar(c float64)(*Matrix){
-    out:=NullMatrix(this.m,this.n)
+    out:=NullMatrixP(this.m,this.n)
     if(c==0){ 
-      return &out
+      return out
     }
     done:=make(chan bool)
     go scalarR(0,len(this.A),c,*this,out,done)
     <-done
-    return &out 
+    return out 
 }
 
-func scalarR(i0,i1 int,c float64,A,C Matrix,done chan <-bool ){
+func scalarR(i0,i1 int,c float64,A Matrix,C *Matrix,done chan <-bool ){
   di:=(i1-i0)
   done2:=make(chan bool,THRESHOLD)
   if(di>=THRESHOLD){
@@ -76,19 +86,19 @@ func (this *Matrix) Scalar(c float64)(*Matrix){
 
 
 // A+B  (A,B  are Matrix)
-func Sum(A,B Matrix)(*Matrix,error){
+func Sum(A,B * Matrix)(*Matrix,error){
   if(A.m==B.m&&A.n==B.n){
     
-    out:=NullMatrix(A.m,A.n)
+    out:=NullMatrixP(A.m,A.n)
     done:=make(chan bool)
     go sumR(0,len(A.A),A,B,out,done)
     <-done
-    return &out,nil
+    return out,nil
   }
   return nil,errors.New(" The Matrixes don't have the same dimensions")
 }
 
-func sumR(i0,i1 int,A,B,C Matrix,done chan <-bool ){
+func sumR(i0,i1 int,A,B, C *Matrix,done chan <-bool ){
   di:=(i1-i0)
   done2:=make(chan bool,THRESHOLD)
   if(di>=THRESHOLD){
@@ -106,7 +116,7 @@ func sumR(i0,i1 int,A,B,C Matrix,done chan <-bool ){
 }
 
 // A+B  (A,B  are Matrix)
-/*func Sum(A,B Matrix)(*Matrix,error){
+/*func Sum(A,B * Matrix)(*Matrix,error){
   if(A.n==B.n&&A.m==B.m){
     
     out:=NullMatrix(A.m,A.n)
@@ -119,19 +129,19 @@ func sumR(i0,i1 int,A,B,C Matrix,done chan <-bool ){
 }*/
 
 // A-B  (A,B are Matrix)
-func Sustract(A,B Matrix)(*Matrix,error){
+func Sustract(A,B *Matrix)(*Matrix,error){
   if(A.m==B.m&&A.n==B.n){
     
-    out:=NullMatrix(A.m,A.n)
+    out:=NullMatrixP(A.m,A.n)
     done:=make(chan bool)
     go sustractR(0,len(A.A),A,B,out,done)
     <-done
-    return &out,nil
+    return out,nil
   }
   return nil,errors.New(" The Matrixes don't have the same dimensions")
 }
 
-func sustractR(i0,i1 int,A,B,C Matrix,done chan <-bool ){
+func sustractR(i0,i1 int,A,B ,C *Matrix,done chan <-bool ){
   di:=(i1-i0)
   done2:=make(chan bool,THRESHOLD)
   if(di>=THRESHOLD){
@@ -162,8 +172,8 @@ func Sustract(A,B Matrix)(*Matrix,error){
 
 
 
-func Product(A,B Matrix) *Matrix{
-   out:=NullMatrix(A.m,B.n)
+func Product(A,B *Matrix) *Matrix{
+   out:=NullMatrixP(A.m,B.n)
   
    if(A.n==B.m){
      
@@ -171,11 +181,11 @@ func Product(A,B Matrix) *Matrix{
       go multr(A,B,out,1,A.m,1,B.n,1,A.n,done)
       <-done
    }
-  return &out
+  return out
 }
 
 const THRESHOLD=100
-func multr(A,B,C Matrix,i0,i1,j0,j1,k0,k1 int,done chan <-bool){
+func multr(A,B , C *Matrix,i0,i1,j0,j1,k0,k1 int,done chan <-bool){
   
   di:=i1-i0
   dj:=j1-j0
@@ -218,7 +228,7 @@ func multr(A,B,C Matrix,i0,i1,j0,j1,k0,k1 int,done chan <-bool){
 
 // Return the AB Product
 func  Multiplication(A,B Matrix) *Matrix{
-  out:=NullMatrix(A.m,B.n)
+  out:=NullMatrixP(A.m,B.n)
   
     done:=make(chan bool)
     mult:=make(chan float64)
@@ -231,7 +241,7 @@ func  Multiplication(A,B Matrix) *Matrix{
       <-done
     }
   }
-  return &out
+  return out
 } 
 
 // for Matrix multiplication in parallel
@@ -266,14 +276,14 @@ func (this *Matrix) Transpose() *Matrix{
     return c
   
   }
-  out:=NullMatrix(this.n,this.m)
+  out:=NullMatrixP(this.n,this.m)
   done:=make(chan bool)
   go this.parallel_Traspose(1,this.m,1,this.n,out,done)
   <-done
-  return &out
+  return out
 }
 
-func (this *Matrix) parallel_Traspose(i0,i1,j0,j1 int, res Matrix,done chan<-bool){
+func (this *Matrix) parallel_Traspose(i0,i1,j0,j1 int, res *Matrix,done chan<-bool){
   di:=i1-i0
   dj:=j1-j0
   done2:=make(chan bool,THRESHOLD)
@@ -342,17 +352,17 @@ func (this *Matrix) InverseGauss()(*Matrix, error){
 
 // Return a Inverse of a Square Matrix by LU  Decomposition 
 func (this *Matrix)Inverse() (*Matrix,error){
-  out:=NullMatrix(this.m,this.n)
+  out:=NullMatrixP(this.m,this.n)
   var newOutA []float64
   if(this.n==this.m){  
   l,u:=this.LUDec()
   
   for i:=1;i<=this.m;i++{
-    column:=NullMatrix(this.m,1)
+    column:=NullMatrixP(this.m,1)
     column.SetValue(i,1,1)
     
     z:=l.fSubs(column)
-    b:=u.bSubs(*z)   
+    b:=u.bSubs(z)   
     newOutA=append(newOutA,b.A[:]...)
     
     }
@@ -362,25 +372,23 @@ func (this *Matrix)Inverse() (*Matrix,error){
   }
  
   out.A=newOutA
-  out=*out.Transpose()
- return &out,nil 
+  out=out.Transpose()
+ return out,nil 
 }
 
 func (this *Matrix) PInverse()(*Matrix) {
     if(this.n==this.m){
+        
         _,R:=this.QRDec()
         
-        println("temp",this.ToString(),R.Transpose().ToString())
-        
+        //println("q ",Q.ToString()," r",R.ToString())   
         temp1,err:=R.Transpose().GaussElimitation(this.Transpose())
-        fmt.Println("Error joder")
+     
         if(err==nil){
         temp2,_:=R.GaussElimitation(temp1)
         return temp2
         }
-        
-        
-        
+       
     }
     return nil
 }
@@ -388,9 +396,9 @@ func (this *Matrix) PInverse()(*Matrix) {
 
 
 //Solve by forward substitution method for L Matrix in Inverse
-func (this *Matrix) fSubs(B Matrix)*Matrix{
-  out:=NullMatrix(B.m,1)
-  lx:=NullMatrix(B.m,1)
+func (this *Matrix) fSubs(B *Matrix)*Matrix{
+  out:=NullMatrixP(B.m,1)
+  lx:=NullMatrixP(B.m,1)
   if(this.n==this.m&&B.m==this.m&&B.n==1){
     
     for i:=1;i<=this.n;i++{
@@ -407,13 +415,13 @@ func (this *Matrix) fSubs(B Matrix)*Matrix{
       out=lx
     
   }
-  return &out
+  return out
 }
 
 //Solve by back substitution method for a U Matrix in Inverse
-func (this *Matrix) bSubs(B  Matrix)*Matrix{
-  out:=NullMatrix(B.m,1)
-  ux:=NullMatrix(B.m,1)
+func (this *Matrix) bSubs(B  *Matrix)*Matrix{
+  out:=NullMatrixP(B.m,1)
+  ux:=NullMatrixP(B.m,1)
   
   if(this.n==this.m&&B.m==this.m&&B.n==1){
    for i:=this.n;i>=1;i--{
@@ -428,14 +436,14 @@ func (this *Matrix) bSubs(B  Matrix)*Matrix{
       }
       out=ux 
   }
-  return &out
+  return out
 }
 
 
 // In a Matrix to Matrix with dimensions A (nxm) and B(n1xm1) return a Matrix C(n*n1xm*m1) 
 // with a elements Ci=Aij*B 
-func KroneckerProduct(A,B Matrix)*Matrix{
-  out:=NullMatrix(A.m*B.m,A.n*B.n)
+func KroneckerProduct(A,B *Matrix)*Matrix{
+  out:=NullMatrixP(A.m*B.m,A.n*B.n)
   for i:=1;i<=A.m;i++{
     for j:=1;j<=A.n;j++{
 	Aij:=A.GetValue(i,j)
@@ -444,5 +452,5 @@ func KroneckerProduct(A,B Matrix)*Matrix{
 	
     }
   }
-  return &out
+  return out
 }

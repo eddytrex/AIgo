@@ -36,7 +36,7 @@ func (this *Hypothesis) ApplyHypothesisToTrainingSet(Ts TrainingSet) (*Matrix.Ma
   for i:=1;i<=Ts.Xs.GetMRows();i++{
     xi:=Ts.Xs.GetRow(i);
     
-    Thi:=Matrix.Product(*xi,*this.ThetaP.Transpose())
+    Thi:=Matrix.Product(xi,this.ThetaP.Transpose())
     
     hx.SetValue(i,1,Thi.GetValue(1,1))
     
@@ -74,7 +74,7 @@ func (this *Hypothesis) part_DiffH1Ys(i0,i1 int,Ts TrainingSet,Ret Matrix.Matrix
       for i:=i0;i<i1;i++{
 	xi:=Ts.Xs.GetRow(i)
 	
-	Thi:=Matrix.Product(*xi,*this.ThetaP.Transpose())
+	Thi:=Matrix.Product(xi,this.ThetaP.Transpose())
 	temp:=this.H(Thi.GetValue(1,1))-Ts.Y.GetValue(1,i)
 	Ret.SetValue(i,1,temp);
         RetT.SetValue(1,i,temp);
@@ -94,7 +94,7 @@ func (this *Hypothesis) DiffH1Ys(Ts TrainingSet) (*Matrix.Matrix){
   for i:=1;i<=Ts.Xs.GetMRows();i++{
     xi:=Ts.Xs.GetRow(i);
     
-    Thi:=Matrix.Product(*xi,*this.ThetaP.Transpose())
+    Thi:=Matrix.Product(xi,this.ThetaP.Transpose())
     
     hx.SetValue(i,1,Thi.GetValue(1,1)-Ts.Y.GetValue(1,i))
     
@@ -145,7 +145,7 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
  var it=1
 
  diferencia,diferenciaT:=h1.Parallel_DiffH1Ys(ts)
- jt:=Matrix.Product(*diferenciaT,*diferencia).Scalar(1/float64(2*m)).GetValue(1,1);
+ jt:=Matrix.Product(diferenciaT,diferencia).Scalar(1/float64(2*m)).GetValue(1,1);
  
  print (1/jt)
  alpha=1/jt
@@ -160,7 +160,7 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
     _,diffT:=h1.Parallel_DiffH1Ys(ts)                                            //h(x)-y
    
     
-    p:=Matrix.Product(*diffT,ts.Xs)                       //Sum( (hi(xi)-yi)*xij)  in matrix form 
+    p:=Matrix.Product(diffT,&ts.Xs)                       //Sum( (hi(xi)-yi)*xij)  in matrix form 
     
     h1.Sum=*p
     
@@ -170,11 +170,11 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
     
     scalar:=p.Scalar(-alpha_it/float64(m))
     
-    ThetaTemp,_:=Matrix.Sum(h1.ThetaP,*scalar)           //Theas=Theas-alfa/m*Sum( (hi(xi)-yi)*xij)  update the parameters   
+    ThetaTemp,_:=Matrix.Sum(&h1.ThetaP,scalar)           //Theas=Theas-alfa/m*Sum( (hi(xi)-yi)*xij)  update the parameters   
     
     h1.ThetaP=*ThetaTemp
  
-    diffError,_:=Matrix.Sustract(*ThetaPB,h1.ThetaP)      //diff between theta's Vector , calc the error
+    diffError,_:=Matrix.Sustract(ThetaPB,&h1.ThetaP)      //diff between theta's Vector , calc the error
     
     Error=diffError.FrobeniusNorm()		         //Frobenius Norm 
     //Error=diffError.InfinityNorm()                     //Infinty Norm  
@@ -193,7 +193,7 @@ func (this *Hypothesis) Evaluate(x *Matrix.Matrix) (float64,error){
     
       xt:=x0.Transpose()
       
-      res:=Matrix.Product(this.ThetaP,*xt); 
+      res:=Matrix.Product(&this.ThetaP,xt); 
       
       return this.H(res.GetValue(1,1)),nil
   }  
@@ -204,21 +204,18 @@ func (this *Hypothesis) Evaluate(x *Matrix.Matrix) (float64,error){
 
 func NormalEquation(ts TrainingSet)(*Hypothesis){
 //     n:=ts.Xs.GetNColumns()
-//     m:=ts.Xs.GetMRows()
+//     m:=ts.Xs.GetMRows().
      ts.AddX0()
-  
-   
-   
-    xTranspose:=ts.Xs.Transpose()
-    mult:=Matrix.Product(*xTranspose,ts.Xs);
+     println (ts.Xs.ToString())
+     Xst:=ts.Xs.Transpose()
+    mult:=Matrix.Product(Xst,&ts.Xs);
     
     pinv:=mult.PInverse()
         
-     //multI:=Matrix.Product(*mult,*inv)
- 
-     
-    xT:=Matrix.Product(*pinv,*xTranspose)
-    theta:=Matrix.Product(*xT,ts.Y);
+    println (pinv.ToString())
+    
+    xT:=Matrix.Product(pinv,Xst)
+    theta:=Matrix.Product(xT,&ts.Y);
     
     var h1 Hypothesis
     

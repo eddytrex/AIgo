@@ -50,24 +50,23 @@ func (this *Matrix)SetValue(i,j int,val float64){
 
 //  return  a copy of a Matrix
 func (this *Matrix) Copy()(*Matrix){
-   out:=NullMatrix(this.m,this.n)
+   out:=NullMatrixP(this.m,this.n)
    copy(out.A,this.A)
-   return &out
+   return out
 }
 
 // Return a Matrix of m,n size and random elements 1-10
 func RandomMatrix(m,n int)*Matrix{
-  out:=NullMatrix(m,n)
+  out:=NullMatrixP(m,n)
   rand.Seed(time.Now().UTC().UnixNano())
   for i:=1;i<=out.m;i++{
     for j:=1;j<=out.n;j++{
     
-      
       out.SetValue(i,j,rand.Float64()*10)
       
     }
   }
-  return &out
+  return out
 }
 
 
@@ -128,9 +127,9 @@ func (this *Matrix) TriangularUpper()bool{
 // If the Matrix (this) is Triangular Lower or Triangular Upper; return the result of it
 //Back and forward substitution
 func (this *Matrix) FBSubs(B Matrix)(*Matrix,error){
-  out:=NullMatrix(B.m,1)
-  lx:=NullMatrix(B.m,1)
-  ux:=NullMatrix(B.m,1)
+  out:=NullMatrixP(B.m,1)
+  lx:=NullMatrixP(B.m,1)
+  ux:=NullMatrixP(B.m,1)
   if(this.n==this.m&&B.m==this.m&&B.n==1){
     if(this.TriangularLower()){
       
@@ -162,7 +161,7 @@ func (this *Matrix) FBSubs(B Matrix)(*Matrix,error){
       }
       out=ux
     }
-    return &out,nil
+    return out,nil
   }
   return nil,errors.New(" The Matrix is no square")
 }
@@ -176,14 +175,14 @@ func (this *Matrix) SumColum(j int)float64{
   return out
 }
 
-//if the Matrix is square get only the main diagonal in a Matrix n*m other is 0
+//if the Matrix is square get only the main diagonal in a Matrix n*1
 func (this *Matrix) GetDiagonal() (*Matrix,error){
   if(this.n==this.m){
-  out:=NullMatrix(this.n,this.m)
+  out:=NullMatrixP(this.n,1)
   for i:=1;i<=this.m;i++{
-      out.SetValue(i,i,this.GetValue(i,i))
+      out.SetValue(i,1,this.GetValue(i,i))
       }
-  return &out,nil
+  return out,nil
   }
   return nil,errors.New(" The Matrix is no square")
 }
@@ -294,9 +293,9 @@ func FromFile(nameFile string)(*Matrix,error){
 	  ff.Close() 
 	  
 	  if(er!=nil){return nil,er}
-	  out:=NullMatrix(row,column)
+	  out:=NullMatrixP(row,column)
 	  out.A=fout
-	  return &out,nil
+	  return out,nil
 }
 
 
@@ -305,12 +304,14 @@ func FromFile(nameFile string)(*Matrix,error){
 
 
 func (this *Matrix) GaussElimitation(Aum *Matrix)(*Matrix, error){
-  if(this.n==this.m&&Aum.m==this.m){
+  if(this.m==Aum.m){
+  //if(this.n==this.m&&Aum.m==this.m){
     //Aum:=I(this.n)
     
     
     for i:=1;i<=this.m;i++{
        
+        
         j:=i
         for k:=i;k<=this.m;k++{
           if (math.Abs(this.GetValue(k,i))>math.Abs(this.GetValue(j,i))){

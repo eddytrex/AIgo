@@ -34,8 +34,8 @@ func (this *Matrix) LUDec()(L *Matrix, U *Matrix){
 // QR Decomposition using  Householder reflections
 
 func (this *Matrix)QRDec()(Q1,R1 *Matrix){
-    Q:=NullMatrix(this.m,this.n)
-    R:=NullMatrix(this.m,this.n)
+    Q:=NullMatrixP(this.m,this.n)
+    R:=NullMatrixP(this.m,this.n)
     var first=true;
     var alpha float64
     var Qp *Matrix
@@ -55,20 +55,20 @@ func (this *Matrix)QRDec()(Q1,R1 *Matrix){
           alpha=abs(X.FrobeniusNorm())
         }
         
-        u,_:=Sustract(*X,*e.Scalar(alpha))        
+        u,_:=Sustract(X,e.Scalar(alpha))        
         v:=u.UnitVector();
 
         Qi,_:=v.HouseholderTrasformation() 
         
         
         if(first){
-            Qp=Product(*Qi,*this)
-            Q=*Qi
+            Qp=Product(Qi,this)
+            Q=Qi
             
             first=false;
         }else{         
-            Q=*Product(Q,*Qi)
-            Qp=Product(*Qi,*Ai)
+            Q=Product(Q,Qi)
+            Qp=Product(Qi,Ai)
         }
         
         for l:=1;l<=i;l++{
@@ -79,20 +79,20 @@ func (this *Matrix)QRDec()(Q1,R1 *Matrix){
         Ai=Qp
     }
     
-    R=*Product(*Q.Transpose(),*this)
+    R=Product(Q.Transpose(),this)
     
     
-    return &Q,&R
+    return Q,R
 }
 
-
+// Set a matrix in the position beginin in PosI,PosI to rest of matrix of NxN
 func SetSubMatrixToI(n int,posI int ,pQ *Matrix)(*Matrix){
     out:=I(n);
     
     if(posI<n&&(posI+pQ.n-1)==n){
         
         if(pQ.m<n){         
-            setMatrix:=NullMatrix((n-pQ.m),pQ.n)
+            setMatrix:=NullMatrixP((n-pQ.m),pQ.n)
             pQ=pQ.AddRowsToTop(setMatrix)
             
             for i:=1;i<=pQ.n;i++{

@@ -3,23 +3,23 @@ package Matrix
 
 //return a given row of a Matrix in Matrix 1*n
 func (this *Matrix) GetRow(i int) *Matrix{
-  out:=NullMatrix(1,this.n)
+  out:=NullMatrixP(1,this.n)
   for j:=1;j<=this.n;j++{
     out.SetValue(1,j,this.GetValue(i,j))
   }
-  return &out
+  return out
 }
 
 // return a column of Matrix in a Matrix m*1
 func (this *Matrix) GetColumn(j int) *Matrix{
-  out:=NullMatrix(this.m,1)
+  out:=NullMatrixP(this.m,1)
   if(j<=this.n){
   for i:=1;i<=this.m;i++{
       //println(this.GetValue(i,j))
     out.SetValue(i,1,this.GetValue(i,j))
   }
   }
-  return &out
+  return out
 }
 
 // substitue Row,R, in the Matrix this
@@ -64,7 +64,7 @@ func (this *Matrix)Trace() float64{
 
 //Multiply a scalar(c) by a row(i) and Return a 1xn Matrix of a Matrix mxn
 func (this *Matrix) ScalarRowMatrix(i int,  c float64)(*Matrix){
-  out:=NullMatrix(1,this.m)
+  out:=NullMatrixP(1,this.m)
   i=i-1
   k:=0
   for j:=0;j<out.n;j++{
@@ -74,7 +74,7 @@ func (this *Matrix) ScalarRowMatrix(i int,  c float64)(*Matrix){
     
     k++
   }
-  return &out
+  return out
 }
 
 
@@ -98,18 +98,18 @@ func (this *Matrix) ScalarRow(i int, C float64){
 
 //Get a Matrix (m-1)rows and n columns of a Matrix mxn
 func (this *Matrix)MatrixWithoutRow(i int)*Matrix{
-    out:=NullMatrix(this.m-1,this.n)
+    out:=NullMatrixP(this.m-1,this.n)
     At:=make([]float64,len(this.A))
     copy(At,this.A)
     i=i-1
     At=append(At[:i*this.m],At[(i+1)*this.m:]...)
     out.A=At
-    return &out
+    return out
 }
 
 //Get a Matrix m rows and (n-1) columns of a Matrix mxn
 func (this *Matrix)MatrixWithoutColumn(j int)*Matrix{
-    out:=NullMatrix(this.m,this.n-1)
+    out:=NullMatrixP(this.m,this.n-1)
     At:=make([]float64,len(this.A))  
     copy(At,this.A)
     err:=1  
@@ -119,7 +119,7 @@ func (this *Matrix)MatrixWithoutColumn(j int)*Matrix{
      At=append(At[:it],At[it+1:]...)
     }    
     out.A=At
-    return &out
+    return out
 }
 
 
@@ -163,7 +163,7 @@ func (this *Matrix)SwapColumn(j0,j int){
 //append the columns of matrix Ci to this
 func (this *Matrix) AddColumn(Ci Matrix)*Matrix{
   if(this.m==Ci.m){
-    out:=NullMatrix(this.m,this.n+Ci.n)
+    out:=NullMatrixP(this.m,this.n+Ci.n)
     var newA []float64
     for i:=0;i<this.m;i++{
       
@@ -178,24 +178,24 @@ func (this *Matrix) AddColumn(Ci Matrix)*Matrix{
       
     }
     copy(out.A,newA)
-    return &out
+    return out
   }
   return nil
 }
 
 
-func (this *Matrix) AddRowsToTop(Cj Matrix)(*Matrix){
+func (this *Matrix) AddRowsToTop(Cj *Matrix)(*Matrix){
     
     if(Cj.n==this.n){
         
-        out:=NullMatrix(this.m+Cj.m,this.n)
+        out:=NullMatrixP(this.m+Cj.m,this.n)
         var newA []float64;
         newA=append(newA,Cj.A[:]...)
         newA=append(newA,this.A[:]...)
         
         out.A=newA;
   
-        return &out
+        return out
         
     }
     return nil
@@ -218,7 +218,7 @@ func (this *Matrix) SumVectorColumn()float64{
 func (this *Matrix) sumColumn(i int) float64{
    var sum float64  
    sum=0
-   for j:=0; j<this.m;j++{
+   for j:=1; j<this.n;j++{
      sum=sum+this.GetValue(i,j)
   }
   return sum
