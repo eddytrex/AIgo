@@ -3,6 +3,7 @@ import (
     //"math"
 )
 
+//QR algorithm for EigenValues
 func (this *Matrix)EigenValues(Tol float64)(*Matrix){
     
     Ai:=this.Copy()
@@ -21,8 +22,7 @@ func (this *Matrix)EigenValues(Tol float64)(*Matrix){
         xi1,_:=Ai.GetDiagonal()
         diff,_:=Sustract(xi,xi1)
         Error=diff.FrobeniusNorm()
-        xi=xi1
-        
+        xi=xi1        
         
     }
     

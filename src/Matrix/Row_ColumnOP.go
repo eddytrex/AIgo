@@ -11,7 +11,7 @@ func (this *Matrix) GetRow(i int) *Matrix{
 }
 
 // return a column of Matrix in a Matrix m*1
-func (this *Matrix) GetColumn(j int) *Matrix{
+func (this *Matrix) GetColumn(j int) *Matrix{    
   out:=NullMatrixP(this.m,1)
   if(j<=this.n){
   for i:=1;i<=this.m;i++{
@@ -24,15 +24,14 @@ func (this *Matrix) GetColumn(j int) *Matrix{
 
 // substitue Row,R, in the Matrix this
 func (this *Matrix) SetRow(i int,R Matrix){
- 
- if(R.m==1&&R.n==this.n&&i>0&&i<=this.n){
- i=i-1  
- 
- temp1:=this.A[:i*this.n]
- temp2:=this.A[(i+1)*this.n:]
+   
+ if(R.m==1&&R.n==this.n&&i>0&&i-1<=this.m){
+    i=i-1  
+    temp1:=this.A[:i*this.n]
+    temp2:=this.A[(i+1)*this.n:]
 
- temp3:=append(temp1,R.A[:]...)
- this.A=append(temp3,temp2[:]...)  
+    temp3:=append(temp1,R.A[:]...)
+    this.A=append(temp3,temp2[:]...)  
  
  
  }
@@ -64,7 +63,7 @@ func (this *Matrix)Trace() float64{
 
 //Multiply a scalar(c) by a row(i) and Return a 1xn Matrix of a Matrix mxn
 func (this *Matrix) ScalarRowMatrix(i int,  c float64)(*Matrix){
-  out:=NullMatrixP(1,this.m)
+  out:=NullMatrixP(1,this.n)
   i=i-1
   k:=0
   for j:=0;j<out.n;j++{
@@ -91,7 +90,8 @@ func (this *Matrix) ScalarRowAndAdd(i0,i int, C float64){
 //  multiply a row of a Matrix  by a number c
 func (this *Matrix) ScalarRow(i int, C float64){
   for j:=1;j<=this.n;j++{
-    this.SetValue(i,j,C*this.GetValue(i,j))
+      
+    this.SetValue(i,j,C*this.GetValue(i,j))    
   }
 }
 
@@ -102,7 +102,9 @@ func (this *Matrix)MatrixWithoutRow(i int)*Matrix{
     At:=make([]float64,len(this.A))
     copy(At,this.A)
     i=i-1
-    At=append(At[:i*this.m],At[(i+1)*this.m:]...)
+    
+    At=append(At[:i*this.n],At[(i+1)*this.n:]...)
+    //println("at",this.m-1)
     out.A=At
     return out
 }
@@ -201,6 +203,23 @@ func (this *Matrix) AddRowsToTop(Cj *Matrix)(*Matrix){
     return nil
 }
 
+
+func (this *Matrix) AddRowsToDown(Cj *Matrix)(*Matrix){
+    
+    if(Cj.n==this.n){
+        
+        out:=NullMatrixP(this.m+Cj.m,this.n)
+        var newA []float64;        
+        newA=append(newA,this.A[:]...)
+        newA=append(newA,Cj.A[:]...)
+        
+        out.A=newA;
+  
+        return out
+        
+    }
+    return nil
+}
 
 // return the sum all elements of a vector a column 
 func (this *Matrix) SumVectorColumn()float64{

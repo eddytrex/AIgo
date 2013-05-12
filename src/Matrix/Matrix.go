@@ -242,6 +242,8 @@ func FromFile(nameFile string)(*Matrix,error){
     }
     var state int
     state=0;
+    rowFalg:=false;
+    
     var column int
     var columni int
     columni=0
@@ -276,6 +278,7 @@ func FromFile(nameFile string)(*Matrix,error){
 	      }
 	      columni=0
 	      row++
+	      rowFalg=true;
 	      state=0;
 	     
 	    }else if(tok==10 && state ==0){
@@ -289,6 +292,11 @@ func FromFile(nameFile string)(*Matrix,error){
 	      break
 	    }
 	    tok=s.Scan()
+            if(tok==scanner.EOF&&rowFalg){
+                er=errors.New("Malformed File. the file has not end with a line")                
+            }else{
+                rowFalg=false
+            }
 	  }
 	  ff.Close() 
 	  

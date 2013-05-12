@@ -137,9 +137,7 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
  h1.ThetaP=*thetaP           
  
  var Error float64
- 
- 
- 
+  
  Error=1.0
  
  var it=1
@@ -147,7 +145,7 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
  diferencia,diferenciaT:=h1.Parallel_DiffH1Ys(ts)
  jt:=Matrix.Product(diferenciaT,diferencia).Scalar(1/float64(2*m)).GetValue(1,1);
  
- print (1/jt)
+ //print (1/jt)
  alpha=1/jt
  
  
