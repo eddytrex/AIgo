@@ -6,11 +6,11 @@ import(
 type ANN struct{
   Layers [] Matrix.Matrix
   Inputs int
-  Activation func(float64)float64
+  Activation func(complex128)complex128
 }
 
 
-func CreateANN(NeuronsByLayer []int,Inputs int,Act func(float64)float64) ANN{
+func CreateANN(NeuronsByLayer []int,Inputs int,Act func(complex128)complex128) ANN{
   var out ANN
   out.Layers=make([]Matrix.Matrix,len(NeuronsByLayer),len(NeuronsByLayer))
   

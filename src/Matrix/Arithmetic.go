@@ -2,13 +2,14 @@ package Matrix
 
 import(
   "errors"
-  "math"
+  //"math"
+  "math/cmplx"
 //   "fmt"
 )
 
 
 func NullMatrixP(m int, n int)(*Matrix){
-  A:=make([]float64,m*n,m*n)
+  A:=make([]complex128,m*n,m*n)
   var out Matrix 
   out.A=A
   out.m=m
@@ -18,7 +19,7 @@ func NullMatrixP(m int, n int)(*Matrix){
 
 // return a Matrix with zero  in all positions and m,n dimensions
 func NullMatrix(m int, n int)Matrix{
-  A:=make([]float64,m*n,m*n)
+  A:=make([]complex128,m*n,m*n)
   var out Matrix 
   out.A=A
   out.m=m
@@ -38,7 +39,7 @@ func I(n int)*Matrix{
 }
 
 // Multiply a Matrix for a scalar   cA
-func (this *Matrix)Scalar(c float64)(*Matrix){
+func (this *Matrix)Scalar(c complex128)(*Matrix){
     out:=NullMatrixP(this.m,this.n)
     if(c==0){ 
       return out
@@ -49,7 +50,7 @@ func (this *Matrix)Scalar(c float64)(*Matrix){
     return out 
 }
 
-func scalarR(i0,i1 int,c float64,A Matrix,C *Matrix,done chan <-bool ){
+func scalarR(i0,i1 int,c complex128,A Matrix,C *Matrix,done chan <-bool ){
   di:=(i1-i0)
   done2:=make(chan bool,THRESHOLD)
   if(di>=THRESHOLD){
@@ -68,7 +69,7 @@ func scalarR(i0,i1 int,c float64,A Matrix,C *Matrix,done chan <-bool ){
 
 /*
 // Multiply a Matrix for a scalar   cA
-func (this *Matrix) Scalar(c float64)(*Matrix){
+func (this *Matrix) Scalar(c complex128)(*Matrix){
   
   if(c==0){
     out:=NullMatrix(this.m,this.n)
@@ -213,7 +214,7 @@ func multr(A,B , C *Matrix,i0,i1,j0,j1,k0,k1 int,done chan <-bool){
   }else{    
     for i:=i0;i<=i1;i++{
       for j:=j0;j<=j1;j++{
-	var temp float64
+	var temp complex128
 	temp=C.GetValue(i,j)
 	for k:=k0;k<=k1;k++{
 	  temp=temp+A.GetValue(i,k)*B.GetValue(k,j)
@@ -231,7 +232,7 @@ func  Multiplication(A,B Matrix) *Matrix{
   out:=NullMatrixP(A.m,B.n)
   
     done:=make(chan bool)
-    mult:=make(chan float64)
+    mult:=make(chan complex128)
   
     for i:=1;i<=A.m;i++{
      for k:=1;k<=B.n;k++{
@@ -245,8 +246,8 @@ func  Multiplication(A,B Matrix) *Matrix{
 } 
 
 // for Matrix multiplication in parallel
-func (this *Matrix) multRowColumn(i,k int, A,B Matrix,out chan <-float64){
-  var temp float64
+func (this *Matrix) multRowColumn(i,k int, A,B Matrix,out chan <-complex128){
+  var temp complex128
   temp=0
   for j:=1;j<=A.n;j++{    
     temp=temp+A.GetValue(i,j)*B.GetValue(j,k)
@@ -255,7 +256,7 @@ func (this *Matrix) multRowColumn(i,k int, A,B Matrix,out chan <-float64){
 }
 
 //for Matrix multiplication in parallel
-func (this *Matrix) setCValue(i,k int, in <- chan  float64, done chan<- bool){ 
+func (this *Matrix) setCValue(i,k int, in <- chan  complex128, done chan<- bool){ 
      for  {
       temp:=<-in
       this.SetValue(i,k,temp)
@@ -317,7 +318,7 @@ func (this *Matrix) InverseGauss()(*Matrix, error){
        
 	j:=i
 	for k:=i;k<=this.m;k++{
-	  if (math.Abs(this.GetValue(k,i))>math.Abs(this.GetValue(j,i))){
+	  if (cmplx.Abs(this.GetValue(k,i))>cmplx.Abs(this.GetValue(j,i))){
 	    j=k
 	  }
 	}
@@ -353,9 +354,9 @@ func (this *Matrix) InverseGauss()(*Matrix, error){
 // Return a Inverse of a Square Matrix by LU  Decomposition 
 func (this *Matrix)Inverse() (*Matrix,error){
   out:=NullMatrixP(this.m,this.n)
-  var newOutA []float64
+  var newOutA []complex128
   if(this.n==this.m){  
-  l,u:=this.LUDec()
+  l,u,_:=this.LUDec()
   
   for i:=1;i<=this.m;i++{
     column:=NullMatrixP(this.m,1)

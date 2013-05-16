@@ -1,10 +1,10 @@
 package Matrix
 import (
-    //"math"
+    "math/cmplx"
 )
 
 //QR algorithm for EigenValues
-func (this *Matrix)EigenValues(Tol float64)(*Matrix){
+func (this *Matrix)EigenValues(Tol complex128)(*Matrix){
     
     Ai:=this.Copy()
     Error:=1.0
@@ -14,7 +14,7 @@ func (this *Matrix)EigenValues(Tol float64)(*Matrix){
     
     xi,_:=Ai.GetDiagonal();
     
-    for Error>Tol{
+    for Error>cmplx.Abs(Tol){
         
         Qi,Ri:=Ai.QRDec()
         Ai=Product(Ri,Qi)
@@ -34,7 +34,7 @@ func (this *Matrix)EigenValues(Tol float64)(*Matrix){
 }
 
 
- func (this *Matrix)EigenVector(eigenV float64)(*Matrix){
+ func (this *Matrix)EigenVector(eigenV complex128)(*Matrix){
        Id:=I(this.n)
        //Z:=NullMatrixP(this.n,1)
        

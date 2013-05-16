@@ -48,8 +48,8 @@ func (this *Matrix) SetColumn(j int, C Matrix){
 
 
 // return the sum of the main diagonal of the square Matrix
-func (this *Matrix)Trace() float64{
-  var out float64
+func (this *Matrix)Trace() complex128{
+  var out complex128
   out=0
   if(this.m==this.n){
   for i:=1;i<this.m;i++{
@@ -62,7 +62,7 @@ func (this *Matrix)Trace() float64{
 
 
 //Multiply a scalar(c) by a row(i) and Return a 1xn Matrix of a Matrix mxn
-func (this *Matrix) ScalarRowMatrix(i int,  c float64)(*Matrix){
+func (this *Matrix) ScalarRowMatrix(i int,  c complex128)(*Matrix){
   out:=NullMatrixP(1,this.n)
   i=i-1
   k:=0
@@ -78,7 +78,7 @@ func (this *Matrix) ScalarRowMatrix(i int,  c float64)(*Matrix){
 
 
 //Multiply a row i by c and adds to  row i0 
-func (this *Matrix) ScalarRowAndAdd(i0,i int, C float64){
+func (this *Matrix) ScalarRowAndAdd(i0,i int, C complex128){
       
       for j:=1;j<=this.n;j++{
 	  NV:=this.GetValue(i0,j)+C*this.GetValue(i,j) 	  
@@ -88,7 +88,7 @@ func (this *Matrix) ScalarRowAndAdd(i0,i int, C float64){
 
 
 //  multiply a row of a Matrix  by a number c
-func (this *Matrix) ScalarRow(i int, C float64){
+func (this *Matrix) ScalarRow(i int, C complex128){
   for j:=1;j<=this.n;j++{
       
     this.SetValue(i,j,C*this.GetValue(i,j))    
@@ -99,7 +99,7 @@ func (this *Matrix) ScalarRow(i int, C float64){
 //Get a Matrix (m-1)rows and n columns of a Matrix mxn
 func (this *Matrix)MatrixWithoutRow(i int)*Matrix{
     out:=NullMatrixP(this.m-1,this.n)
-    At:=make([]float64,len(this.A))
+    At:=make([]complex128,len(this.A))
     copy(At,this.A)
     i=i-1
     
@@ -112,7 +112,7 @@ func (this *Matrix)MatrixWithoutRow(i int)*Matrix{
 //Get a Matrix m rows and (n-1) columns of a Matrix mxn
 func (this *Matrix)MatrixWithoutColumn(j int)*Matrix{
     out:=NullMatrixP(this.m,this.n-1)
-    At:=make([]float64,len(this.A))  
+    At:=make([]complex128,len(this.A))  
     copy(At,this.A)
     err:=1  
     for i:=0;i<this.m;i++{
@@ -166,11 +166,11 @@ func (this *Matrix)SwapColumn(j0,j int){
 func (this *Matrix) AddColumn(Ci Matrix)*Matrix{
   if(this.m==Ci.m){
     out:=NullMatrixP(this.m,this.n+Ci.n)
-    var newA []float64
+    var newA []complex128
     for i:=0;i<this.m;i++{
       
-      rowTempThis:=make([]float64,this.n)
-      rowTempCi:=make([]float64,Ci.n)
+      rowTempThis:=make([]complex128,this.n)
+      rowTempCi:=make([]complex128,Ci.n)
       
       copy(rowTempThis,this.A[i*this.n:(i+1)*this.n])
       copy(rowTempCi,Ci.A[i*Ci.n:(i+1)*Ci.n])
@@ -191,7 +191,7 @@ func (this *Matrix) AddRowsToTop(Cj *Matrix)(*Matrix){
     if(Cj.n==this.n){
         
         out:=NullMatrixP(this.m+Cj.m,this.n)
-        var newA []float64;
+        var newA []complex128;
         newA=append(newA,Cj.A[:]...)
         newA=append(newA,this.A[:]...)
         
@@ -209,7 +209,7 @@ func (this *Matrix) AddRowsToDown(Cj *Matrix)(*Matrix){
     if(Cj.n==this.n){
         
         out:=NullMatrixP(this.m+Cj.m,this.n)
-        var newA []float64;        
+        var newA []complex128;        
         newA=append(newA,this.A[:]...)
         newA=append(newA,Cj.A[:]...)
         
@@ -221,9 +221,31 @@ func (this *Matrix) AddRowsToDown(Cj *Matrix)(*Matrix){
     return nil
 }
 
+func (this *Matrix)GetSubMatrix(i, j, r, c int )(*Matrix){
+    ret:=this.Copy()
+    for i1:=1;i1<i;i1++{
+        ret=ret.MatrixWithoutRow(i1)
+    }
+    
+    for j1:=1;j1<j;j1++{
+        ret=ret.MatrixWithoutColumn(j1)
+    }        
+    
+    n:=ret.n
+    m:=ret.m
+    for i1:=r+1;i1<n;i1++{
+        ret.MatrixWithoutRow(i1)
+    }
+    for j1:=c+1;j1<m;j1++{
+        ret=ret.MatrixWithoutColumn(j1)
+    }
+    return ret
+}
+
+
 // return the sum all elements of a vector a column 
-func (this *Matrix) SumVectorColumn()float64{
-  var sum float64
+func (this *Matrix) SumVectorColumn()complex128{
+  var sum complex128
   sum=0
   if(this.m==1){
     for j:=0;j<this.n;j++{
@@ -234,8 +256,8 @@ func (this *Matrix) SumVectorColumn()float64{
 }
 
 
-func (this *Matrix) sumColumn(i int) float64{
-   var sum float64  
+func (this *Matrix) sumColumn(i int) complex128{
+   var sum complex128  
    sum=0
    for j:=1; j<this.n;j++{
      sum=sum+this.GetValue(i,j)

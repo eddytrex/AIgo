@@ -8,12 +8,12 @@ func (this *Matrix) UnitVector()(*Matrix){
   duplicate:=this.Copy()
   if(this.n==1){
     norm:=this.FrobeniusNorm();
-    duplicate=duplicate.Scalar(1/norm)
+    duplicate=duplicate.Scalar(complex(1/norm,0))
   }
   return duplicate
 }
 
-func  DotProduct(a,b *Matrix)(*Matrix){
+func  DotMultiplication(a,b *Matrix)(*Matrix){
     res:=NullMatrixP(1,a.n)
     if(a.m==1&&a.n==b.n){
         for i:=1;i<=a.n;i++{

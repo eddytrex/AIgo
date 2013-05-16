@@ -30,7 +30,7 @@ func MakeTrainingSet(xs Matrix.Matrix,y Matrix.Matrix)(* TrainingSet){
     xsi:=this.Xs.GetRow(i);
     sum=Matrix.Sum(xsi,sum)
   }
-  sum.Scalar(1/(float64 this.Xs.GetMRows()))  
+  sum.Scalar(1/(complex128 this.Xs.GetMRows()))  
 }
 
 func (this *TrainingSet)sumParameters(i0,i1 int, max, min ,res *Matrix.Matrix ,done chan<-bool){

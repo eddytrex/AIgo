@@ -12,13 +12,13 @@ func (this *Matrix)SubMatrix(i,j int) *Matrix{
 
 // return the determinant of a square Matrix 
 // O(n!) I don't think someone will use it
-func (this *Matrix)Det_LapaceExpasion()(float64,error){
+func (this *Matrix)Det_LapaceExpasion()(complex128,error){
   if(this.n==this.m){
     if(this.n==1){
       return this.GetValue(1,1),nil
       
     }else{
-      var sum float64
+      var sum complex128
       sum=0
 	for i:=1;i<=this.m;i++{
 	  
@@ -41,12 +41,12 @@ func (this *Matrix)Det_LapaceExpasion()(float64,error){
 
 
 // Return the determinant of a Matrix by LU  Decomposition 
-func (this *Matrix) Det_LU()(float64,error){
+func (this *Matrix) Det_LU()(complex128,error){
   
   if(this.GetMRows()==this.GetNColumns()){
-  _,U:=this.LUDec()  
+  _,U,_:=this.LUDec()  
   
-  var Det float64
+  var Det complex128
   Det=1
   
   for ui:=1;ui<=U.n;ui++{

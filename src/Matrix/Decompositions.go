@@ -1,70 +1,176 @@
 package Matrix
+import(
+    "math/cmplx"
+    "math"
+)
 
+
+//Pivot
+func (this *Matrix)Pivot()(*Matrix,*Matrix){
+    pivot:=this.Copy()
+    if(this.m==this.n){
+        p:=I(this.m)
+        for j:=1;j<=this.m;j++{
+            max:=cmplx.Abs(pivot.GetValue(j,j))
+            row:=j
+            for i:=j;i<=pivot.m;i++{
+                pvalue:=pivot.GetValue(i,j)
+                if(cmplx.Abs(pvalue)>max){
+                    max=cmplx.Abs(pvalue)
+                    row=i
+                }
+            }
+            if j!=row{
+                tj:=this.GetRow(j)
+                trow:=this.GetRow(row)                
+                
+                pivot.SetRow(j,*trow)
+                pivot.SetRow(row,*tj)                
+                
+                pj:=p.GetRow(j)
+                prow:=p.GetRow(row)
+                
+                p.SetRow(j,*prow)
+                p.SetRow(row,*pj)
+            }            
+        }
+        return p,pivot
+    }
+    return nil,nil
+}
+
+//LU Decomposition of a Matrix 
+func (this *Matrix) LUDec()(L *Matrix,U *Matrix, P *Matrix){
+    L=NullMatrixP(this.n,this.m)
+    U=NullMatrixP(this.n,this.m)
+    P,thisi:=this.Pivot()
+    for j:=1;j<=thisi.m;j++{
+        L.SetValue(j,j,complex(1.0,0.0))
+        for i:=1;i<=j;i++{
+            sum:=complex(0.0,0.0)
+            for k:=1;k<=i;k++{
+                sum=sum+U.GetValue(k,j)*L.GetValue(i,k)                
+            }
+            U.SetValue(i,j,thisi.GetValue(i,j)-sum)
+        }
+        for i:=j;i<=thisi.m;i++{
+            sum:=complex(0.0,0.0)
+            for k:=1;k<j;k++{
+                sum=sum+U.GetValue(k,j)*L.GetValue(i,k)
+            }
+            L.SetValue(i,j,(thisi.GetValue(i,j)-sum)/U.GetValue(j,j))
+        }
+    }    
+    return
+}
 
 // LU Decomposition of a Matrix 
-func (this *Matrix) LUDec()(L *Matrix, U *Matrix){
-  if(this.m==this.n){
-   U:=this.Copy()
-   L:=I(this.n)	    
-   
-   var UAnt float64
-   
-   for k:=1;k<=this.m;k++{   
-     
-     for i:=k+1;i<=this.m;i++{
+// func (this *Matrix) LUDec()(L *Matrix, U *Matrix){
+//   if(this.m==this.n){
+//    U:=this.Copy()
+//    L:=I(this.n)	    
+//    
+//    var UAnt complex128
+//    
+//    for k:=1;k<=this.m;k++{   
+//      
+//      for i:=k+1;i<=this.m;i++{
+//        
+// 	L.SetValue(i,k,U.GetValue(i,k)/U.GetValue(k,k))   		
+//         for j:=1;j<=this.n;j++{
+//            
+// 	 UAnt=U.GetValue(i,j)-U.GetValue(k,j)*L.GetValue(i,k)	 
+// 	 U.SetValue(i,j,UAnt)
+// 	 
+//       }
+//     }
+//    }
+//    for i:=1;i<=this.m;i++{
+//      L.SetValue(i,i,1) 
+//    }
+//    return L,U
+//   }
+//   return nil,nil
+// }
+
+//QR Decomposition using  Householder reflections
+func (this *Matrix)QR()(Q1,R1 *Matrix){
+    n:=this.n; //rows
+    m:=this.m; //columns
+
+    last:=n-1
+    
+    var alpha complex128
+    Q:=I(m)
+    if(m==n){
+        last--
+    }           
+    Ai:=this.Copy()
+    
+    for i:=0;i<=last;i++{        
+        b:=Ai.GetSubMatrix(i+1,i+1,m-i+1,n-i+1)
+        x:=b.GetColumn(1)        
        
-	L.SetValue(i,k,U.GetValue(i,k)/U.GetValue(k,k))   	
-	
-       for j:=1;j<=this.n;j++{
-	 
-	 UAnt=U.GetValue(i,j)-U.GetValue(k,j)*L.GetValue(i,k)	 
-	 U.SetValue(i,j,UAnt)
-	 
-      }
-    }
-   }
-   for i:=1;i<=this.m;i++{
-     L.SetValue(i,i,1) 
-   }
-   return L,U
-  }
-  return nil,nil
+        e:=NullMatrix(x.m,1)
+        e.SetValue(i+1,1,1)
+        
+        x1:=x.GetValue(i+1,1)              
+        
+        alpha=cmplx.Exp(complex(0,-math.Atan2(imag(x1),real(x1))))*complex(x.FrobeniusNorm(),0)
+        
+//         if(real(x1)>0){
+//            alpha=complex(-x.FrobeniusNorm(),0)
+//         }else{
+//           alpha=complex(x.FrobeniusNorm(),0)
+//         }
+        
+        u,_:=Sustract(x,e.Scalar(alpha))        
+        v:=u.UnitVector();
+        
+        hht,_:=v.HouseholderTrasformation()
+        
+        h:=SetSubMatrixToI(m,i+1,hht)
+        
+        Q=Product(Q,h)
+        
+        Ai=Product(h,Ai)
+       
+    }        
+    return Q,Ai
 }
 
 // QR Decomposition using  Householder reflections
-
 func (this *Matrix)QRDec()(Q1,R1 *Matrix){
     Q:=NullMatrixP(this.m,this.n)
     R:=NullMatrixP(this.m,this.n)
     var first=true;
-    var alpha float64
+    var alpha complex128
     var Qp *Matrix
     Ai:=this.Copy()
     for i:=1;i<this.m;i++{
         
         X:=Ai.GetColumn(i)
         
+        
         e:=NullMatrix(X.m,1)
         e.SetValue(i,1,1)
         
-        x1:=X.GetValue(i,1)
-
-        if(x1>0){
-           alpha=-abs(X.FrobeniusNorm())
+        x1:=X.GetValue(i,1)              
+        if(real(x1)>0){
+           alpha=complex(-X.FrobeniusNorm(),0)
         }else{
-          alpha=abs(X.FrobeniusNorm())
+          alpha=complex(X.FrobeniusNorm(),0)
         }
         
         u,_:=Sustract(X,e.Scalar(alpha))        
         v:=u.UnitVector();
-
-        Qi,_:=v.HouseholderTrasformation() 
         
+        
+        Qi,_:=v.HouseholderTrasformation() 
         
         if(first){
             Qp=Product(Qi,this)
-            Q=Qi
-            
+            Q=Qi            
             first=false;
         }else{         
             Q=Product(Q,Qi)
@@ -80,12 +186,10 @@ func (this *Matrix)QRDec()(Q1,R1 *Matrix){
     }
     
     R=Product(Q.Transpose(),this)
-    
-    
     return Q,R
 }
 
-// Set a matrix in the position beginin in PosI,PosI to rest of matrix of NxN
+// Set a matrix in the position beginin in PosI,PosI to rest of matrix of nxn
 func SetSubMatrixToI(n int,posI int ,pQ *Matrix)(*Matrix){
     out:=I(n);
     

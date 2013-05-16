@@ -10,7 +10,7 @@ type Hypothesis struct{
   M int
   Sum Matrix.Matrix
   
-  H func (float64)float64
+  H func (complex128)complex128
 }
 
 
@@ -105,20 +105,20 @@ func (this *Hypothesis) DiffH1Ys(Ts TrainingSet) (*Matrix.Matrix){
 }
 
 
-func LinearRegression(alpha float64,Tolerance float64,ts TrainingSet)( *Hypothesis){
-  f:=func (x float64)float64{return x}
+func LinearRegression(alpha complex128,Tolerance complex128,ts TrainingSet)( *Hypothesis){
+  f:=func (x complex128)complex128{return x}
   hy:=GradientDescent(alpha,Tolerance,ts,f)
   return hy
 }
 
-func LogisticRegression(alpha float64,Tolerance float64,ts TrainingSet)( *Hypothesis){
-  f:=func (x float64)float64{return 1/(1+math.Exp(-x))}
+func LogisticRegression(alpha complex128,Tolerance complex128,ts TrainingSet)( *Hypothesis){
+  f:=func (x complex128)complex128{return 1/(1+math.Exp(-x))}
   hy:=GradientDescent(alpha,Tolerance,ts,f)
   return hy
 }
 
 
-func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x float64)float64)( *Hypothesis){
+func GradientDescent(alpha complex128,Tolerance complex128,ts TrainingSet,f func (x complex128)complex128)( *Hypothesis){
  n:=ts.Xs.GetNColumns()
  m:=ts.Xs.GetMRows()
  
@@ -136,14 +136,14 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
  h1.H=f
  h1.ThetaP=*thetaP           
  
- var Error float64
+ var Error complex128
   
  Error=1.0
  
  var it=1
 
  diferencia,diferenciaT:=h1.Parallel_DiffH1Ys(ts)
- jt:=Matrix.Product(diferenciaT,diferencia).Scalar(1/float64(2*m)).GetValue(1,1);
+ jt:=Matrix.Product(diferenciaT,diferencia).Scalar(1/complex128(2*m)).GetValue(1,1);
  
  //print (1/jt)
  alpha=1/jt
@@ -162,11 +162,11 @@ func GradientDescent(alpha float64,Tolerance float64,ts TrainingSet,f func (x fl
     
     h1.Sum=*p
     
-    alpha_it:=alpha/(math.Sqrt(float64(it)))
+    alpha_it:=alpha/(math.Sqrt(complex128(it)))
     
     //scalar:=p.Scalar(alpham)              //-alpha/m*Sum( (hi(xi)-yi)*xij)
     
-    scalar:=p.Scalar(-alpha_it/float64(m))
+    scalar:=p.Scalar(-alpha_it/complex128(m))
     
     ThetaTemp,_:=Matrix.Sum(&h1.ThetaP,scalar)           //Theas=Theas-alfa/m*Sum( (hi(xi)-yi)*xij)  update the parameters   
     
@@ -183,7 +183,7 @@ println("No iteraciones ",it)
  return &h1
 }
 
-func (this *Hypothesis) Evaluate(x *Matrix.Matrix) (float64,error){
+func (this *Hypothesis) Evaluate(x *Matrix.Matrix) (complex128,error){
   x0:=Matrix.NullMatrix(1,1)
   x0.SetValue(1,1,1);
   x0=*x0.AddColumn(*x)
