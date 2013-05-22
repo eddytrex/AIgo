@@ -35,11 +35,8 @@ import (
 func FFT(this *Matrix.Matrix,N int)(*Matrix.Matrix,error){    
     if(N>this.GetMRows()){return nil,errors.New(" The number of Rows of the matrix (this) must be greater or equal than N ")}    
     if(N&(N-1)==0){        
-<<<<<<< HEAD
         Xr:=FFT_ct(this,N,1,true)                  
-=======
-        Xr:=FFT_ct(this,N,1)                  
->>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
+
          return Xr,nil
     }
     return nil,errors.New(" The N parameter has to be power of 2")
@@ -48,22 +45,15 @@ func FFT(this *Matrix.Matrix,N int)(*Matrix.Matrix,error){
 func IFFT(this *Matrix.Matrix,N int)(*Matrix.Matrix,error){    
     if(N>this.GetMRows()){return nil,errors.New(" The number of Rows of the matrix (this) must be greater or equal than N ")}    
     if(N&(N-1)==0){        
-<<<<<<< HEAD
         Xr:=FFT_ct(this,N,1,false)                  
-=======
-        Xr:=FFT_ct(this,N,1)                  
->>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
         Xr=Xr.Scalar(complex(float64(1)/float64(N),0))
          return Xr,nil
     }
     return nil,errors.New(" The N parameter has to be power of 2")
 }
 
-<<<<<<< HEAD
+
 func  FFT_ct(this *Matrix.Matrix,N, skip int,ifft bool )(*Matrix.Matrix){
-=======
-func  FFT_ct(this *Matrix.Matrix,N, skip int )(*Matrix.Matrix){
->>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
                            
         if(N==1){            
             return this.GetRow(1)
@@ -78,7 +68,6 @@ func  FFT_ct(this *Matrix.Matrix,N, skip int )(*Matrix.Matrix){
          xskip=xskip.AddRowsToDown(p)
          
                 
-<<<<<<< HEAD
         Ar:=FFT_ct(this,N/2,skip*2,ifft)
         Br:=FFT_ct(xskip,N/2,skip*2,ifft)
          
@@ -92,13 +81,7 @@ func  FFT_ct(this *Matrix.Matrix,N, skip int )(*Matrix.Matrix){
         
         for k:=0;k<N/2;k++{            
                   Br.ScalarRow(k+1,cmplx.Exp(complex(0,inv*-2.0*math.Pi*float64(k)/float64(N))))                   
-=======
-        Ar:=FFT_ct(this,N/2,skip*2)
-        Br:=FFT_ct(xskip,N/2,skip*2)
-        
-        for k:=0;k<N/2;k++{
-                   Br.ScalarRow(k+1,cmplx.Exp(complex(0,-2.0*math.Pi*float64(k)/float64(N))))                   
->>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
+
         }
                 
         Xr:=Matrix.NullMatrixP(N,this.GetNColumns())
