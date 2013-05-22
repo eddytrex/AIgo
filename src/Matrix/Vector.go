@@ -13,7 +13,7 @@ func (this *Matrix) UnitVector()(*Matrix){
   return duplicate
 }
 
-<<<<<<< HEAD
+
 
 func TwoVariableFuncionApply(i0,i1 int,A,B, C *Matrix,done chan <-bool ,f func (a,b complex128)(complex128)){
   di:=(i1-i0)
@@ -27,14 +27,6 @@ func TwoVariableFuncionApply(i0,i1 int,A,B, C *Matrix,done chan <-bool ,f func (
   }else{
     for i:=i0;i<i1;i++{
       C.A[i]=f(A.A[i],B.A[i])
-=======
-func  DotMultiplication(a,b *Matrix)(*Matrix){
-    res:=NullMatrixP(1,a.n)
-    if(a.m==1&&a.n==b.n){
-        for i:=1;i<=a.n;i++{
-            res.SetValue(1,i,a.GetValue(1,i)*b.GetValue(1,i))
-        }
->>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
     }
   }
   done<-true

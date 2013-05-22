@@ -85,7 +85,6 @@ func (this *Matrix)ToString() string{
        impart=strconv.FormatFloat(imag(this.A[i*this.n+j]),'f',6,64)
       }
       out=out+"\t "+strconv.FormatFloat(real(this.A[i*this.n+j]),'f',6,64)+impart+"i"
-<<<<<<< HEAD
     }
     out=out+"\n"
   }
@@ -100,8 +99,6 @@ func (this *Matrix)ToStringAbs() string{
   for i:=0;i<this.m;i++{
     for j:=0;j<this.n;j++ {            
       out=out+"\t "+strconv.FormatFloat(cmplx.Abs(this.A[i*this.n+j]),'f',6,64)
-=======
->>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
     }
     out=out+"\n"
   }
@@ -192,11 +189,7 @@ func (this *Matrix) FBSubs(B Matrix)(*Matrix,error){
 
 func (this *Matrix) SumColum(j int)complex128{
   var out complex128
-<<<<<<< HEAD
-  out=0  
-=======
-  out=0
->>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
+  out= complex(0,0)
   for i:=1;i<=this.m;i++{
     out=out+this.GetValue(i,j)
   }
