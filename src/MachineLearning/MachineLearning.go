@@ -138,7 +138,7 @@ func GradientDescent(alpha complex128,Tolerance complex128,ts TrainingSet,f func
  
  var Error complex128
   
- Error=1.0
+ Error=complex(1.0,0)
  
  var it=1
 
@@ -149,7 +149,7 @@ func GradientDescent(alpha complex128,Tolerance complex128,ts TrainingSet,f func
  alpha=1/jt
  
  
- for Error>=Tolerance{                        // Until converges
+ for real(Error)>=real(Tolerance){                        // Until converges
     
     ThetaPB:=h1.ThetaP.Copy()                //for Error Calc
        
@@ -174,7 +174,7 @@ func GradientDescent(alpha complex128,Tolerance complex128,ts TrainingSet,f func
  
     diffError,_:=Matrix.Sustract(ThetaPB,&h1.ThetaP)      //diff between theta's Vector , calc the error
     
-    Error=diffError.FrobeniusNorm()		         //Frobenius Norm 
+    Error=complex(diffError.FrobeniusNorm(),0)		   //Frobenius Norm 
     //Error=diffError.InfinityNorm()                     //Infinty Norm  
     it++;
  }

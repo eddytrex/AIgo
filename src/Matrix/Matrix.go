@@ -85,6 +85,23 @@ func (this *Matrix)ToString() string{
        impart=strconv.FormatFloat(imag(this.A[i*this.n+j]),'f',6,64)
       }
       out=out+"\t "+strconv.FormatFloat(real(this.A[i*this.n+j]),'f',6,64)+impart+"i"
+<<<<<<< HEAD
+    }
+    out=out+"\n"
+  }
+  }
+  return out
+}
+
+func (this *Matrix)ToStringAbs() string{
+  var out string
+  out=""
+  if(this!=nil){
+  for i:=0;i<this.m;i++{
+    for j:=0;j<this.n;j++ {            
+      out=out+"\t "+strconv.FormatFloat(cmplx.Abs(this.A[i*this.n+j]),'f',6,64)
+=======
+>>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
     }
     out=out+"\n"
   }
@@ -175,7 +192,11 @@ func (this *Matrix) FBSubs(B Matrix)(*Matrix,error){
 
 func (this *Matrix) SumColum(j int)complex128{
   var out complex128
+<<<<<<< HEAD
+  out=0  
+=======
   out=0
+>>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
   for i:=1;i<=this.m;i++{
     out=out+this.GetValue(i,j)
   }
@@ -430,16 +451,10 @@ func FromFile(nameFile string)(*Matrix,error){
 }
 
 
-
-
-
-
 func (this *Matrix) GaussElimitation(Aum *Matrix)(*Matrix, error){
   if(this.m==Aum.m){
   //if(this.n==this.m&&Aum.m==this.m){
     //Aum:=I(this.n)
-    
-    
     for i:=1;i<=this.m;i++{
        
         
@@ -478,4 +493,40 @@ func (this *Matrix) GaussElimitation(Aum *Matrix)(*Matrix, error){
     return Aum,nil
   }
   return nil,errors.New(" the Matrix is not Square ")
+}
+
+
+
+func Equal(A,B *Matrix)(bool){
+    if(A.m==B.m&&A.n==B.n){
+        done:=make(chan bool)
+        go equalArray(0,len(A.A),A,B,done)        
+        return <-done
+    }
+    return false;
+}
+
+
+func equalArray(i0,i1 int,A,B  *Matrix,done chan <-bool){
+  di:=(i1-i0)
+  out:=true;
+  done2:=make(chan bool,THRESHOLD)
+  if(di>=THRESHOLD){
+    mi:=i0+di/2
+    go equalArray(i0,mi,A,B,done2)
+    go equalArray(mi,i1,A,B,done2)
+    g1:=<-done2
+    g2:=<-done2
+    if(!g1||!g2){ out=false; }    
+    
+  }else{
+    for i:=i0;i<i1;i++{
+        if(real(A.A[i])!=real(B.A[i])||imag(A.A[i])!=imag(B.A[i])){
+            out=false  
+            break;            
+        }
+      //C.A[i]=f(A.A[i],B.A[i])
+    }
+  }
+  done<-out
 }

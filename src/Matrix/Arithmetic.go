@@ -257,14 +257,38 @@ func (this *Matrix) multRowColumn(i,k int, A,B Matrix,out chan <-complex128){
 
 //for Matrix multiplication in parallel
 func (this *Matrix) setCValue(i,k int, in <- chan  complex128, done chan<- bool){ 
+<<<<<<< HEAD
+    
+=======
      for  {
+>>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
       temp:=<-in
       this.SetValue(i,k,temp)
-      break
-    }
+    
+    
     done<-true
 }
 
+// return a ConjugateTraspose 
+func (this *Matrix)ConjugateTraspose()(*Matrix){
+     if(this.m==1||this.n==1){    
+        c:=this.Copy()
+        t:=c.m
+        c.m=c.n
+        c.n=t;
+        c=c.Apply(
+                func(a complex128)(complex128){
+                    return cmplx.Conj(a)
+                    
+                })
+        return c  
+     } 
+     out:=NullMatrixP(this.n,this.m)
+     done:=make(chan bool)
+     go this.parallel_Traspose(1,this.m,1,this.n,out,done,true)
+     <-done
+     return out
+}
 
 // Return a Matrix Transpose 
 func (this *Matrix) Transpose() *Matrix{
@@ -279,34 +303,43 @@ func (this *Matrix) Transpose() *Matrix{
   }
   out:=NullMatrixP(this.n,this.m)
   done:=make(chan bool)
-  go this.parallel_Traspose(1,this.m,1,this.n,out,done)
+  go this.parallel_Traspose(1,this.m,1,this.n,out,done,false)
   <-done
   return out
 }
 
-func (this *Matrix) parallel_Traspose(i0,i1,j0,j1 int, res *Matrix,done chan<-bool){
+func (this *Matrix) parallel_Traspose(i0,i1,j0,j1 int, res *Matrix,done chan<-bool,conjugate bool){
   di:=i1-i0
   dj:=j1-j0
   done2:=make(chan bool,THRESHOLD)
   if(di>=dj&&di>=THRESHOLD){
       mi:=i0+di/2
-      go this.parallel_Traspose(i0,mi,j0,j1,res,done2)
-       this.parallel_Traspose(mi,i1,j0,j1,res,done2)
+      go this.parallel_Traspose(i0,mi,j0,j1,res,done2,conjugate)
+       this.parallel_Traspose(mi,i1,j0,j1,res,done2,conjugate)
       <-done2
       <-done2
   }else if (dj>=THRESHOLD){
       mj:=j0+dj/2
       
-      go this.parallel_Traspose(i0,i1,j0,mj,res,done2)
-       this.parallel_Traspose(i0,i1,mj,i1,res,done2)
+      go this.parallel_Traspose(i0,i1,j0,mj,res,done2,conjugate)
+       this.parallel_Traspose(i0,i1,mj,i1,res,done2,conjugate)
       <-done2
       <-done2
   }else{
+      
+  if(!conjugate){   
       for i:=i0;i<=i1;i++{
-	for j:=j0;j<=j1;j++{
-	  res.SetValue(j,i,this.GetValue(i,j))
+	for j:=j0;j<=j1;j++{        
+            res.SetValue(j,i,this.GetValue(i,j))
 	}
       }
+  }else{
+        for i:=i0;i<=i1;i++{
+          for j:=j0;j<=j1;j++{
+            res.SetValue(j,i,cmplx.Conj(this.GetValue(i,j)))  
+          }
+        }
+  }
   }
   done<-true
 }

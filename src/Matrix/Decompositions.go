@@ -39,7 +39,11 @@ func (this *Matrix)Pivot()(*Matrix,*Matrix){
     return nil,nil
 }
 
+<<<<<<< HEAD
+//LU Decomposition of a Matrix implementation from gomatrix 
+=======
 //LU Decomposition of a Matrix 
+>>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
 func (this *Matrix) LUDec()(L *Matrix,U *Matrix, P *Matrix){
     L=NullMatrixP(this.n,this.m)
     U=NullMatrixP(this.n,this.m)
@@ -117,6 +121,9 @@ func (this *Matrix)QR()(Q1,R1 *Matrix){
         x1:=x.GetValue(i+1,1)              
         
         alpha=cmplx.Exp(complex(0,-math.Atan2(imag(x1),real(x1))))*complex(x.FrobeniusNorm(),0)
+<<<<<<< HEAD
+                
+=======
         
 //         if(real(x1)>0){
 //            alpha=complex(-x.FrobeniusNorm(),0)
@@ -124,6 +131,7 @@ func (this *Matrix)QR()(Q1,R1 *Matrix){
 //           alpha=complex(x.FrobeniusNorm(),0)
 //         }
         
+>>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
         u,_:=Sustract(x,e.Scalar(alpha))        
         v:=u.UnitVector();
         
@@ -189,12 +197,16 @@ func (this *Matrix)QRDec()(Q1,R1 *Matrix){
     return Q,R
 }
 
+<<<<<<< HEAD
+
+//TODO esto se pude mejorar
+// Set a matrix in the position beginin in PosI,PosI on a Identity Matrix
+=======
 // Set a matrix in the position beginin in PosI,PosI to rest of matrix of nxn
+>>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
 func SetSubMatrixToI(n int,posI int ,pQ *Matrix)(*Matrix){
-    out:=I(n);
-    
-    if(posI<n&&(posI+pQ.n-1)==n){
-        
+    out:=I(n);    
+    if(posI<n&&(posI+pQ.n-1)==n){        
         if(pQ.m<n){         
             setMatrix:=NullMatrixP((n-pQ.m),pQ.n)
             pQ=pQ.AddRowsToTop(setMatrix)
@@ -209,7 +221,6 @@ func SetSubMatrixToI(n int,posI int ,pQ *Matrix)(*Matrix){
             return pQ
         }
         return out
-    }
-    
+    }    
     return nil
 }
