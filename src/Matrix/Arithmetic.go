@@ -257,11 +257,7 @@ func (this *Matrix) multRowColumn(i,k int, A,B Matrix,out chan <-complex128){
 
 //for Matrix multiplication in parallel
 func (this *Matrix) setCValue(i,k int, in <- chan  complex128, done chan<- bool){ 
-<<<<<<< HEAD
-    
-=======
-     for  {
->>>>>>> c8dd31ca064c801f714c7e09da27a197cb548ff9
+
       temp:=<-in
       this.SetValue(i,k,temp)
     
