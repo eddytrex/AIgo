@@ -1,10 +1,10 @@
 package Polynomial
+
 import (
-  "Matrix"
-) 
+	"Matrix"
+)
 
-type polynomial struct{
-  coeficientes matrix 
-  exponentes matrix
+type polynomial struct {
+	coeficientes matrix
+	exponentes   matrix
 }
-

@@ -1,55 +1,30 @@
 package main
 
 import (
-  "fmt"
-  "Matrix"
-  //"MachineLearning"
-  //"Fourier"
-  //"ANN"
-  //"math"
-  
+	"MachineLearning"
+	"Matrix"
+	"fmt"
 )
 
+func main() {
+	X, _ := Matrix.FromFile("MachineLearning/test/X3.txt")
+	Y, _ := Matrix.FromFile("MachineLearning/test/Y3.txt")
 
-func main(){
-    
-//      b,er2:=Matrix.FromFile("tDFT.txt")     
-//      fmt.Println("->",er2)
-//      fft,_:=Fourier.FFT(b,8)
-//      println("Fourier\n",fft.ToString())
-//      
-//      ifft,_:=Fourier.IFFT(fft,8)
-//      println("InFourier\n",ifft.ToString())
-     
+	fmt.Println("X", X.ToString())
+	fmt.Println("Y", Y.ToString())
 
-     c,er:=Matrix.FromFile("Matrix/test/null.txt")
-     d,er1:=Matrix.FromFile("Matrix/test/I.txt")     
-     
-     
-     fmt.Println(">",Matrix.Equal(c,d))
-     fmt.Println("c->",c.ToString(),"->",er,er1)
-     
-//      L,U,_:=c.LUDec()         
-//      println("L",L.ToString())     
-//      println("U",U.ToString())
-     
+	TraingSet := MachineLearning.MakeTrainingSet(X, Y)
+	Salida := MachineLearning.LinearRegression(complex(1E-6, 0.0), complex(1E-6, 0.0), TraingSet)
+	fmt.Println("Theta Parameters:", Salida.ThetaParameters.ToString())
 
-//       Q,R:=c.QR()     
-//       fmt.Println("q",Q.ToString())
-//       fmt.Println("r",R.ToString())
-//      
-//       
-//       t,_:=R.Transpose().GaussElimitation(c.Transpose())
-//       t2,err:=R.GaussElimitation(t)
-//       fmt.Println("m",t2.ToString(),"-<",err)
+	x1, _ := Salida.Evaluate(X.GetRow(1))
+	fmt.Println("test:f(", X.GetRow(1).ToString(), ")=", x1)
 
-     
-        
-//         a,er1:=Matrix.FromFile("m.txt")
-//         if(er1==nil){
-// //             b:=a.EigenValues(0.0001)
-// //             fmt.Println("-",b.ToString())
-//                ps:=a.PInverse()
-//                fmt.Println("ps",ps.ToString())
-//         }
+	fmt.Println("Mean", TraingSet.Mean().ToString())
+	//Salida2 := MachineLearning.NormalEquation(TraingSet)
+	//fmt.Println("Theta Parameters:", Salida2.ThetaParameters.ToString())
+
+	//x2, _ := Salida2.Evaluate(X.GetRow(1))
+	//fmt.Println("test:f(", X.GetRow(1).ToString(), ")=", x2)
+
 }
