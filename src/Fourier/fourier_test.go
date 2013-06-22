@@ -35,7 +35,7 @@ func BenchmarkFFT(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		FFT(xi, 1024)
+		FFT(xi, 32768)
 	}
 
 }

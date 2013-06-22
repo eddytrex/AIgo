@@ -105,9 +105,12 @@ func (this *Matrix) MatrixWithoutRow(i int) *Matrix {
 
 // matrix without the i first rows
 func (this *Matrix) SlideRows(i int) *Matrix {
-	out := NullMatrixP(this.m-1, this.n)
+	var out Matrix
+	out.m = this.m - 1
+	out.n = this.n
+
 	out.A = this.A[this.n*i:]
-	return out
+	return &out
 }
 
 //Get a Matrix m rows and (n-1) columns of a Matrix mxn
