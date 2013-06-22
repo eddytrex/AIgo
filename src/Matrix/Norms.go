@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/cmplx"
 	//"errors"
+	"runtime"
 )
 
 func (this *Matrix) InfinityNorm() complex128 {
@@ -50,7 +51,7 @@ func (this *Matrix) sumApplyFunction(i0, i1 int, pSum chan<- complex128, f func(
 	dx := i1 - i0
 	xm := i0 + dx/2
 	pSum2 := make(chan complex128, THRESHOLD)
-	if dx >= THRESHOLD {
+	if dx >= THRESHOLD && runtime.NumGoroutine() < maxGoRoutines {
 
 		go this.sumApplyFunction(i0, xm, pSum2, f)
 		this.sumApplyFunction(xm, i1, pSum2, f)

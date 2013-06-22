@@ -17,13 +17,13 @@ func NullMatrixP(m int, n int) *Matrix {
 }
 
 // return a Matrix with zero  in all positions and m,n dimensions
-func NullMatrix(m int, n int) Matrix {
+func NullMatrix(m int, n int) *Matrix {
 	A := make([]complex128, m*n, m*n)
 	var out Matrix
 	out.A = A
 	out.m = m
 	out.n = n
-	return out
+	return &out
 }
 
 // return a square Matrix nxn  and one's in the main diagonal
@@ -259,13 +259,13 @@ func multr(A, B, C *Matrix, i0, i1, j0, j1, k0, k1 int, done chan<- bool) {
 //}
 
 //for Matrix multiplication in parallel
-func (this *Matrix) setCValue(i, k int, in <-chan complex128, done chan<- bool) {
+//func (this *Matrix) setCValue(i, k int, in <-chan complex128, done chan<- bool) {
 
-	temp := <-in
-	this.SetValue(i, k, temp)
+//	temp := <-in
+//	this.SetValue(i, k, temp)
 
-	done <- true
-}
+//	done <- true
+//}
 
 // return a ConjugateTraspose
 func (this *Matrix) ConjugateTraspose() *Matrix {

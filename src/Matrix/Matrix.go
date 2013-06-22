@@ -8,16 +8,16 @@ import (
 	"math/cmplx"
 
 	"bufio"
+	"math"
 	"os"
+	"runtime"
 	"text/scanner"
 	"time"
-
-	"runtime"
 )
 
-const THRESHOLD = 100
+const THRESHOLD = 1000
 
-var maxGoRoutines = runtime.GOMAXPROCS(0) + 2
+var maxGoRoutines = runtime.GOMAXPROCS(0) + 1
 
 type Matrix struct {
 	// m rows and n columns
@@ -222,7 +222,7 @@ func (this *Matrix) Apply(f func(complex128) complex128) *Matrix {
 func applyR(i0, i1 int, C, out *Matrix, f func(complex128) complex128, done chan<- bool) {
 	di := (i1 - i0)
 
-	if di >= THRESHOLD {
+	if di >= THRESHOLD && runtime.NumGoroutine() < maxGoRoutines {
 		done2 := make(chan bool, THRESHOLD)
 		mi := i0 + di/2
 		go applyR(i0, mi, C, out, f, done2)
@@ -246,6 +246,7 @@ func abs(N complex128) complex128 {
 	return 0
 }
 
+//TODO Use YACC tool
 func FromFile(nameFile string) (*Matrix, error) {
 	ff, errfile := os.Open(nameFile)
 
@@ -485,8 +486,6 @@ func Equal(A, B *Matrix) bool {
 	if A.m == B.m && A.n == B.n {
 		done := make(chan bool)
 
-		//countGoroutines := 0
-
 		var equalArray func(i0, i1 int, A, B *Matrix, done chan<- bool)
 		equalArray = func(i0, i1 int, A, B *Matrix, done chan<- bool) {
 			di := (i1 - i0)
@@ -495,15 +494,17 @@ func Equal(A, B *Matrix) bool {
 			if di >= THRESHOLD && runtime.NumGoroutine() < maxGoRoutines {
 				done2 := make(chan bool, THRESHOLD)
 				mi := i0 + di/2
-				//countGoroutines += 2
+
 				go equalArray(i0, mi, A, B, done2)
 				go equalArray(mi, i1, A, B, done2)
 
-				g1 := <-done2 // TODO: si es g1 es falso no tiene por que esperar a la otra Goroutine SELECT
-				g2 := <-done2
-				if !g1 || !g2 {
+				g1 := <-done2
+				if !g1 {
 					out = false
+				} else {
+					out = <-done2
 				}
+
 			} else {
 				for i := i0; i < i1; i++ {
 					if real(A.A[i]) != real(B.A[i]) || imag(A.A[i]) != imag(B.A[i]) {
@@ -517,6 +518,85 @@ func Equal(A, B *Matrix) bool {
 
 		go equalArray(0, len(A.A), A, B, done)
 		return <-done
+	}
+	return false
+}
+
+const Near = 1E-15
+
+func almostEqualComplex(a, b complex128) bool {
+	a_R := real(a)
+	a_I := imag(a)
+
+	b_R := real(b)
+	b_I := imag(b)
+
+	almostFloat := func(a, b float64) bool {
+
+		return math.Abs(a-b) <= Near || math.Abs(1-a/b) <= Near
+	}
+
+	return almostFloat(a_R, b_R) && almostFloat(a_I, b_I)
+
+}
+func AlmostEqual(A, B *Matrix) bool {
+	if A.m == B.m && A.n == B.n {
+		done := make(chan bool)
+
+		var equalArray func(i0, i1 int, A, B *Matrix, done chan<- bool)
+		equalArray = func(i0, i1 int, A, B *Matrix, done chan<- bool) {
+			di := (i1 - i0)
+			out := true
+
+			if di >= THRESHOLD && runtime.NumGoroutine() < maxGoRoutines {
+				done2 := make(chan bool, THRESHOLD)
+				mi := i0 + di/2
+
+				go equalArray(i0, mi, A, B, done2)
+				go equalArray(mi, i1, A, B, done2)
+
+				g1 := <-done2
+				if !g1 {
+					out = false
+				} else {
+					out = <-done2
+				}
+			} else {
+				for i := i0; i < i1; i++ {
+
+					if !almostEqualComplex(A.A[i], B.A[i]) {
+						//println("->", A.A[i], "--", B.A[i])
+						out = false
+						break
+					}
+				}
+			}
+			done <- out
+		}
+
+		go equalArray(0, len(A.A), A, B, done)
+		return <-done
+	}
+	return false
+}
+
+func (this *Matrix) DiagonalDominance() bool {
+	if this.n == this.m {
+		for i := 1; i <= this.m; i++ {
+			Sum := 0.0
+			for j := 1; i <= this.n; j++ {
+				if j != i {
+					Sum += cmplx.Abs(this.GetValue(i, j))
+				}
+				if cmplx.Abs(this.GetValue(i, i)) > Sum {
+					return false
+				}
+			}
+			//if (cmplx.Abs(this.GetValue(i,i))>Sum){
+			//return false
+			//}
+		}
+		return true
 	}
 	return false
 }

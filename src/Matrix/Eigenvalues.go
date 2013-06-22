@@ -27,11 +27,11 @@ func (this *Matrix) EigenValues(Tol complex128) *Matrix {
 
 	}
 
-	Eig := NullMatrix(this.n, 1)
+	Eig := NullMatrixP(this.n, 1)
 	for i := 1; i <= this.n; i++ {
 		Eig.SetValue(i, 1, Ai.GetValue(i, i))
 	}
-	return &Eig
+	return Eig
 }
 
 func (this *Matrix) EigenVector(eigenV complex128) *Matrix {

@@ -37,7 +37,8 @@ func FFT(this *Matrix.Matrix, N int) (*Matrix.Matrix, error) {
 		return nil, errors.New(" The number of Rows of the matrix (this) must be greater or equal than N ")
 	}
 	if N&(N-1) == 0 {
-		Xr := FFT_ct(this, N, 1, true)
+		tf := TwiddleFactors(N, false)
+		Xr := FFT_ct(this, N, 1, false, tf)
 
 		return Xr, nil
 	}
@@ -49,49 +50,49 @@ func IFFT(this *Matrix.Matrix, N int) (*Matrix.Matrix, error) {
 		return nil, errors.New(" The number of Rows of the matrix (this) must be greater or equal than N ")
 	}
 	if N&(N-1) == 0 {
-		Xr := FFT_ct(this, N, 1, false)
+		tf := TwiddleFactors(N, true)
+		Xr := FFT_ct(this, N, 1, true, tf)
 		Xr = Xr.Scalar(complex(float64(1)/float64(N), 0))
 		return Xr, nil
 	}
 	return nil, errors.New(" The N parameter has to be power of 2")
 }
 
-func FFT_ct(this *Matrix.Matrix, N, skip int, ifft bool) *Matrix.Matrix {
+func FFT_ct(this *Matrix.Matrix, N, skip int, ifft bool, tf []complex128) *Matrix.Matrix {
 
 	if N == 1 {
 		return this.GetRow(1)
 	}
 
-	//*x+skip
-	xskip := this.Copy()
-	for i := 1; i <= skip; i++ {
-		xskip = xskip.MatrixWithoutRow(1)
-	}
-	p := Matrix.NullMatrixP(skip, this.GetNColumns())
-	xskip = xskip.AddRowsToDown(p)
+	xskip := this.SlideRows(skip)
 
-	Ar := FFT_ct(this, N/2, skip*2, ifft)
-	Br := FFT_ct(xskip, N/2, skip*2, ifft)
-
-	inv := 1.0
-	if ifft {
-		inv = -1.0
-	} else {
-		inv = 1.0
-	}
-
-	for k := 0; k < N/2; k++ {
-		Br.ScalarRow(k+1, cmplx.Exp(complex(0, inv*-2.0*math.Pi*float64(k)/float64(N))))
-
-	}
+	Ar := FFT_ct(this, N/2, skip*2, ifft, tf)
+	Br := FFT_ct(xskip, N/2, skip*2, ifft, tf)
 
 	Xr := Matrix.NullMatrixP(N, this.GetNColumns())
-	//Xi:=Matrix.NullMatrixP(N,this.GetNColumns())
+
 	for k := 0; k < N/2; k++ {
+
+		Br.ScalarRow(k+1, tf[k*skip])
+
 		sr, _ := Matrix.Sum(Ar.GetRow(k+1), Br.GetRow(k+1))
-		Xr.SetRow(k+1, *sr)
+		Xr.SetRow(k+1, sr)
 		rr, _ := Matrix.Sustract(Ar.GetRow(k+1), Br.GetRow(k+1))
-		Xr.SetRow(k+1+N/2, *rr)
+		Xr.SetRow(k+1+N/2, rr)
+
 	}
 	return Xr
+}
+
+func TwiddleFactors(N int, ifft bool) []complex128 {
+	out := make([]complex128, N)
+
+	inv := 1
+	if ifft {
+		inv = -1
+	}
+	for i := 0; i < N/2; i++ {
+		out[i] = cmplx.Rect(1, math.Pi*float64(-2*i*inv)/float64(N))
+	}
+	return out
 }

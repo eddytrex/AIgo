@@ -32,6 +32,8 @@ func (this *Matrix) SetRow(i int, R *Matrix) {
 		temp3 := append(temp1, R.A[:]...)
 		this.A = append(temp3, temp2[:]...)
 
+	} else {
+
 	}
 }
 
@@ -98,6 +100,13 @@ func (this *Matrix) MatrixWithoutRow(i int) *Matrix {
 	At = append(At[:i*this.n], At[(i+1)*this.n:]...)
 	//println("at",this.m-1)
 	out.A = At
+	return out
+}
+
+// matrix without the i first rows
+func (this *Matrix) SlideRows(i int) *Matrix {
+	out := NullMatrixP(this.m-1, this.n)
+	out.A = this.A[this.n*i:]
 	return out
 }
 
@@ -242,8 +251,22 @@ func (this *Matrix) SumVectorColumn() complex128 {
 func (this *Matrix) sumColumn(i int) complex128 {
 	var sum complex128
 	sum = 0
-	for j := 1; j < this.n; j++ {
-		sum = sum + this.GetValue(i, j)
+	if i <= this.n && i > 0 {
+		for j := 1; j < this.m; j++ {
+			sum += this.GetValue(i, j)
+		}
+	}
+
+	return sum
+}
+
+func (this *Matrix) sumRow(j int) complex128 {
+	var sum complex128
+	sum = 0
+	if j <= this.m && j > 0 {
+		for i := 1; i < this.n; i++ {
+			sum += this.GetValue(i, j)
+		}
 	}
 	return sum
 }
