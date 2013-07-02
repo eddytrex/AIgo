@@ -16,8 +16,9 @@ func (this *Matrix) UnitVector() *Matrix {
 
 func TwoVariableFuncionApply(i0, i1 int, A, B, C *Matrix, done chan<- bool, f func(a, b complex128) complex128) {
 	di := (i1 - i0)
-	done2 := make(chan bool, THRESHOLD)
+
 	if di >= THRESHOLD && runtime.NumGoroutine() < maxGoRoutines {
+		done2 := make(chan bool, 2)
 		mi := i0 + di/2
 		go TwoVariableFuncionApply(i0, mi, A, B, C, done2, f)
 		go TwoVariableFuncionApply(mi, i1, A, B, C, done2, f)

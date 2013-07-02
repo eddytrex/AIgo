@@ -103,6 +103,16 @@ func (this *Matrix) MatrixWithoutRow(i int) *Matrix {
 	return out
 }
 
+func (this *Matrix) FirstRows(i int) *Matrix {
+	var out Matrix
+	out.m = i
+	out.n = this.n
+
+	out.A = this.A[:this.n*i]
+	println("", this.A[0])
+	return &out
+}
+
 // matrix without the i first rows
 func (this *Matrix) SlideRows(i int) *Matrix {
 	var out Matrix
@@ -110,6 +120,17 @@ func (this *Matrix) SlideRows(i int) *Matrix {
 	out.n = this.n
 
 	out.A = this.A[this.n*i:]
+	return &out
+}
+
+func (this *Matrix) MatrixWithoutFirstRows(i int) *Matrix {
+	var out Matrix
+	out.m = this.m
+	out.n = this.n
+
+	nRows := make([]complex128, this.n*i)
+
+	out.A = append(this.A[this.n*i:], nRows...)
 	return &out
 }
 

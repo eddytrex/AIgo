@@ -39,7 +39,7 @@ func FFT(this *Matrix.Matrix, N int) (*Matrix.Matrix, error) {
 	if N&(N-1) == 0 {
 		tf := TwiddleFactors(N, false)
 
-		Xr := FFT_ct(this, N, 1, false, tf)
+		Xr := FFT_ct2(this, N, 1, false, tf)
 
 		return Xr, nil
 	}
@@ -53,7 +53,7 @@ func IFFT(this *Matrix.Matrix, N int) (*Matrix.Matrix, error) {
 	if N&(N-1) == 0 {
 		tf := TwiddleFactors(N, true)
 
-		Xr := FFT_ct(this, N, 1, true, tf)
+		Xr := FFT_ct2(this, N, 1, true, tf)
 
 		Xr = Xr.Scalar(complex(float64(1)/float64(N), 0))
 		return Xr, nil
@@ -88,6 +88,7 @@ func FFT_ct(this *Matrix.Matrix, N, skip int, ifft bool, tf []complex128) *Matri
 func FFT_ct2(this *Matrix.Matrix, N, skip int, ifft bool, tf []complex128) *Matrix.Matrix {
 
 	if N == 1 {
+
 		return this.GetRow(1)
 	}
 
@@ -100,9 +101,11 @@ func FFT_ct2(this *Matrix.Matrix, N, skip int, ifft bool, tf []complex128) *Matr
 
 		Br.ScalarRow(k+1, tf[k*skip])
 
-		sr, _ := Matrix.Sum(Ar.GetRow(k+1), Br.GetRow(k+1))
+		sr, rr, _ := Matrix.Sum_Sustract(Ar.GetRow(k+1), Br.GetRow(k+1))
+
+		//sr, _ := Matrix.Sum(Ar.GetRow(k+1), Br.GetRow(k+1))
 		Xr.SetRow(k+1, sr)
-		rr, _ := Matrix.Sustract(Ar.GetRow(k+1), Br.GetRow(k+1))
+		//rr, _ := Matrix.Sustract(Ar.GetRow(k+1), Br.GetRow(k+1))
 		Xr.SetRow(k+1+N/2, rr)
 
 	}

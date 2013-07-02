@@ -87,6 +87,40 @@ func (this *Matrix) Scalar(c complex128)(*Matrix){
   return nil
 }*/
 
+func Sum_Sustract(A, B *Matrix) (*Matrix, *Matrix, error) {
+	if A.m == B.m && A.n == B.n {
+		sum := NullMatrixP(A.m, A.n)
+		sustract := NullMatrixP(A.m, A.n)
+		done := make(chan bool)
+
+		var app func(i0, i1 int, A, B *Matrix, done chan<- bool)
+
+		app = func(i0, i1 int, A, B *Matrix, done chan<- bool) {
+			di := (i1 - i0)
+
+			if di >= THRESHOLD && runtime.NumGoroutine() < maxGoRoutines {
+				done2 := make(chan bool, 2)
+				mi := i0 + di/2
+				go app(i0, mi, A, B, done2)
+				app(mi, i1, A, B, done2)
+				<-done2
+				<-done2
+			} else {
+				for i := i0; i < i1; i++ {
+					sum.A[i] = A.A[i] + B.A[i]
+					sustract.A[i] = A.A[i] - B.A[i]
+				}
+			}
+			done <- true
+		}
+		go app(0, len(A.A), A, B, done)
+
+		<-done
+		return sum, sustract, nil
+	}
+	return nil, nil, errors.New(" The Matrixes don't have the same dimensions")
+}
+
 // A+B  (A,B  are Matrix)
 func Sum(A, B *Matrix) (*Matrix, error) {
 	if A.m == B.m && A.n == B.n {

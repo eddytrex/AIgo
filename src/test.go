@@ -11,17 +11,19 @@ import (
 func main() {
 
 	fmt.Println("-<", runtime.NumGoroutine(), "-<")
-	X, _ := Matrix.FromFile("Fourier/test/forDTF.txt")
 
-	Xn, _ := Fourier.FFT(X, 8)
+	X, _ := Matrix.FromFile("Fourier/test/BMFFT.txt")
+	//Xn := Fourier.Order(X, 8)
+	Xn, _ := Fourier.FFT(X, 32768)
+	fmt.Println("X", Xn.GetMRows())
 
-	Xi, _ := Fourier.IFFT(Xn, 8)
+	//X, _ := Matrix.FromFile("Fourier/test/BMFFT.txt")
+	//Xn := Fourier.Order(X, 32768)
+	//fmt.Println("X", Xn.GetMRows())
 
-	fmt.Println("X", Xn.ToString())
+	//fmt.Println("X", Xi.ToString())
 
-	fmt.Println("X", Xi.ToString())
-
-	fmt.Println("E:=", Matrix.AlmostEqual(X, Xi))
+	//fmt.Println("E:=", Matrix.AlmostEqual(X, Xi))
 	//X, _ := Matrix.FromFile("MachineLearning/test/X3.txt")
 	//Y, _ := Matrix.FromFile("MachineLearning/test/Y3.txt")
 
