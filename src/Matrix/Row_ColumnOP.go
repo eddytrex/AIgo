@@ -9,6 +9,15 @@ func (this *Matrix) GetRow(i int) *Matrix {
 	return out
 }
 
+func (this *Matrix) GetReferenceRow(i int) *Matrix {
+	var out Matrix
+	out.n = this.n
+	out.m = 1
+	i = i - 1
+	out.A = this.A[i*this.n : (i+1)*this.n]
+	return &out
+}
+
 // return a column of Matrix in a Matrix m*1
 func (this *Matrix) GetColumn(j int) *Matrix {
 	out := NullMatrixP(this.m, 1)
@@ -25,12 +34,14 @@ func (this *Matrix) GetColumn(j int) *Matrix {
 func (this *Matrix) SetRow(i int, R *Matrix) {
 
 	if R.m == 1 && R.n == this.n && i > 0 && i-1 <= this.m {
-		i = i - 1
-		temp1 := this.A[:i*this.n]
-		temp2 := this.A[(i+1)*this.n:]
 
-		temp3 := append(temp1, R.A[:]...)
-		this.A = append(temp3, temp2[:]...)
+		for j := 1; j <= this.n; j++ {
+			this.SetValue(i, j, R.GetValue(1, j))
+		}
+
+		//i = i - 1
+		//temp1 := append(this.A[:i*this.n], R.A...)
+		//this.A = append(temp1, this.A[(i+1)*this.n:]...)
 
 	} else {
 
@@ -82,6 +93,13 @@ func (this *Matrix) ScalarRowAndAdd(i0, i int, C complex128) {
 	}
 }
 
+func (this *Matrix) ScalarRowIntoRowMatrix(To *Matrix, i int, C complex128) {
+	for j := 1; j <= this.n; j++ {
+
+		To.SetValue(1, j, C*this.GetValue(i, j))
+	}
+}
+
 //  multiply a row of a Matrix  by a number c
 func (this *Matrix) ScalarRow(i int, C complex128) {
 	for j := 1; j <= this.n; j++ {
@@ -114,7 +132,7 @@ func (this *Matrix) FirstRows(i int) *Matrix {
 }
 
 // matrix without the i first rows
-func (this *Matrix) SlideRows(i int) *Matrix {
+func (this *Matrix) MatrixWithoutFirstRows(i int) *Matrix {
 	var out Matrix
 	out.m = this.m - 1
 	out.n = this.n
@@ -123,16 +141,16 @@ func (this *Matrix) SlideRows(i int) *Matrix {
 	return &out
 }
 
-func (this *Matrix) MatrixWithoutFirstRows(i int) *Matrix {
-	var out Matrix
-	out.m = this.m
-	out.n = this.n
+//func (this *Matrix) MatrixWithoutFirstRows(i int) *Matrix {
+//	var out Matrix
+//	out.m = this.m
+//	out.n = this.n
 
-	nRows := make([]complex128, this.n*i)
+//	nRows := make([]complex128, this.n*i)
 
-	out.A = append(this.A[this.n*i:], nRows...)
-	return &out
-}
+//	out.A = append(this.A[this.n*i:], nRows...)
+//	return &out
+//}
 
 //Get a Matrix m rows and (n-1) columns of a Matrix mxn
 func (this *Matrix) MatrixWithoutColumn(j int) *Matrix {

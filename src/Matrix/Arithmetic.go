@@ -102,7 +102,7 @@ func Sum_Sustract(A, B *Matrix) (*Matrix, *Matrix, error) {
 				done2 := make(chan bool, 2)
 				mi := i0 + di/2
 				go app(i0, mi, A, B, done2)
-				app(mi, i1, A, B, done2)
+				go app(mi, i1, A, B, done2)
 				<-done2
 				<-done2
 			} else {

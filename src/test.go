@@ -13,6 +13,7 @@ func main() {
 	fmt.Println("-<", runtime.NumGoroutine(), "-<")
 
 	X, _ := Matrix.FromFile("Fourier/test/BMFFT.txt")
+
 	//Xn := Fourier.Order(X, 8)
 	Xn, _ := Fourier.FFT(X, 32768)
 	fmt.Println("X", Xn.GetMRows())

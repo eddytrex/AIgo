@@ -39,7 +39,7 @@ func FFT(this *Matrix.Matrix, N int) (*Matrix.Matrix, error) {
 	if N&(N-1) == 0 {
 		tf := TwiddleFactors(N, false)
 
-		Xr := FFT_ct2(this, N, 1, false, tf)
+		Xr := FFT_ct2(this, N, 1, &tf)
 
 		return Xr, nil
 	}
@@ -53,7 +53,7 @@ func IFFT(this *Matrix.Matrix, N int) (*Matrix.Matrix, error) {
 	if N&(N-1) == 0 {
 		tf := TwiddleFactors(N, true)
 
-		Xr := FFT_ct2(this, N, 1, true, tf)
+		Xr := FFT_ct(this, N, 1, &tf)
 
 		Xr = Xr.Scalar(complex(float64(1)/float64(N), 0))
 		return Xr, nil
@@ -61,55 +61,90 @@ func IFFT(this *Matrix.Matrix, N int) (*Matrix.Matrix, error) {
 	return nil, errors.New(" The N parameter has to be power of 2")
 }
 
-func FFT_ct(this *Matrix.Matrix, N, skip int, ifft bool, tf []complex128) *Matrix.Matrix {
-
-	if N == 1 {
-		return this.GetRow(1)
-	}
-
-	Ar := FFT_ct(this, N/2, skip*2, ifft, tf)
-	Br := FFT_ct(this.SlideRows(skip), N/2, skip*2, ifft, tf)
+func FFT_ct(this *Matrix.Matrix, N, skip int, tf *[]complex128) *Matrix.Matrix {
 
 	Xr := Matrix.NullMatrixP(N, this.GetNColumns())
+	RowTemp := Matrix.NullMatrixP(1, this.GetNColumns())
 
-	for k := 0; k < N/2; k++ {
-
-		Br.ScalarRow(k+1, tf[k*skip])
-
-		sr, _ := Matrix.Sum(Ar.GetRow(k+1), Br.GetRow(k+1))
-		Xr.SetRow(k+1, sr)
-		rr, _ := Matrix.Sustract(Ar.GetRow(k+1), Br.GetRow(k+1))
-		Xr.SetRow(k+1+N/2, rr)
-
-	}
+	FFT_aux(this, Xr, RowTemp, N, skip, tf)
 	return Xr
 }
 
-func FFT_ct2(this *Matrix.Matrix, N, skip int, ifft bool, tf []complex128) *Matrix.Matrix {
+func FFT_aux(this, xr, RowTemp *Matrix.Matrix, N, skip int, tf *[]complex128) {
 
 	if N == 1 {
-
-		return this.GetRow(1)
+		xr.SetRow(1, this.GetReferenceRow(1))
+		return
 	}
 
-	Ar := FFT_ct(this, N/2, skip*2, ifft, tf)
-	Br := FFT_ct(this.SlideRows(skip), N/2, skip*2, ifft, tf)
-
-	Xr := Matrix.NullMatrixP(N, this.GetNColumns())
+	FFT_aux(this, xr, RowTemp, N/2, skip*2, tf)
+	FFT_aux(this.MatrixWithoutFirstRows(skip), xr.MatrixWithoutFirstRows(N/2), RowTemp, N/2, skip*2, tf)
 
 	for k := 0; k < N/2; k++ {
 
-		Br.ScalarRow(k+1, tf[k*skip])
+		xr.ScalarRowIntoRowMatrix(RowTemp, k+1+N/2, (*tf)[k*skip])
 
-		sr, rr, _ := Matrix.Sum_Sustract(Ar.GetRow(k+1), Br.GetRow(k+1))
+		sr, rr, _ := Matrix.Sum_Sustract(xr.GetReferenceRow(k+1), RowTemp)
 
-		//sr, _ := Matrix.Sum(Ar.GetRow(k+1), Br.GetRow(k+1))
-		Xr.SetRow(k+1, sr)
-		//rr, _ := Matrix.Sustract(Ar.GetRow(k+1), Br.GetRow(k+1))
-		Xr.SetRow(k+1+N/2, rr)
+		xr.SetRow(k+1, sr)
+		xr.SetRow(k+1+N/2, rr)
 
 	}
-	return Xr
+}
+
+func FFT_ct2(this *Matrix.Matrix, N, skip int, tf *[]complex128) *Matrix.Matrix {
+
+	Xr := Matrix.NullMatrixP(N, this.GetNColumns())
+	Scratch := Matrix.NullMatrixP(N, this.GetNColumns())
+	//	RowTemp := Matrix.NullMatrixP(1, this.GetNColumns())
+
+	var E, D, Xp, Xstart *Matrix.Matrix
+
+	var evenIteration bool
+
+	if N%2 == 0 {
+		evenIteration = true
+	} else {
+		evenIteration = false
+	}
+
+	if N == 1 {
+		Xr.SetRow(1, this.GetReferenceRow(1))
+	}
+
+	E = this
+
+	for n := 1; n < N; n *= 2 {
+
+		if evenIteration {
+			Xstart = Scratch
+		} else {
+			Xstart = Xr
+		}
+
+		skip := N / (2 * n)
+
+		Xp = Xstart
+
+		for k := 0; k != n; k++ {
+			for m := 0; m != skip; m++ {
+				D = E.MatrixWithoutFirstRows(skip)
+				D.ScalarRow(1, (*tf)[skip*k])
+
+				sr, rr, _ := Matrix.Sum_Sustract(E.GetReferenceRow(1), D.GetReferenceRow(1))
+
+				Xp.SetRow(1, sr)
+				Xp.SetRow(N/2+1, rr)
+
+				Xp = Xp.MatrixWithoutFirstRows(1)
+				E = E.MatrixWithoutFirstRows(1)
+			}
+			E = E.MatrixWithoutFirstRows(skip)
+		}
+		E = Xstart
+		evenIteration = !evenIteration
+	}
+	return Scratch
 }
 
 func TwiddleFactors(N int, ifft bool) []complex128 {
