@@ -16,4 +16,7 @@
 - ANN
     - BackPropagation
     - ART2
+- Search
+    - A*
+    - Genetic Algorithm
     
