@@ -7,7 +7,8 @@ import (
 
 func (this *Matrix) UnitVector() *Matrix {
 	duplicate := this.Copy()
-	if this.n == 1 {
+	if this.n == 1 || this.m == 1 {
+
 		norm := this.FrobeniusNorm()
 		duplicate = duplicate.Scalar(complex(1/norm, 0))
 	}

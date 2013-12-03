@@ -35,7 +35,7 @@ func (this *Hypothesis) ApplyHypothesisToTrainingSet(Ts TrainingSet) *Matrix.Mat
 
 	m := Ts.Xs.GetMRows()
 
-	hx := Matrix.NullMatrix(m, 1)
+	hx := Matrix.NullMatrixP(m, 1)
 
 	if this.ThetaParameters.GetNColumns() == Ts.Xs.GetNColumns() {
 		for i := 1; i <= Ts.Xs.GetMRows(); i++ {
@@ -46,7 +46,7 @@ func (this *Hypothesis) ApplyHypothesisToTrainingSet(Ts TrainingSet) *Matrix.Mat
 			hx.SetValue(i, 1, Thi.GetValue(1, 1))
 
 		}
-		return &hx
+		return hx
 	}
 	return nil
 }
@@ -147,8 +147,7 @@ func GradientDescent(alpha complex128, Tolerance complex128, ts *TrainingSet, f 
 	diferencia, diferenciaT := h1.Parallel_DiffH1Ys(ts)
 	jt := Matrix.Product(diferenciaT, diferencia).Scalar(1/complex(2.0*float64(m), 0.0)).GetValue(1, 1)
 
-	println("hola:)", 1/jt)
-	//alpha = 1 / jt
+	alpha = 1 / jt
 
 	for cmplx.Abs(Error) >= cmplx.Abs(Tolerance) { // Until converges
 

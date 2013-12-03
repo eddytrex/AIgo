@@ -39,7 +39,7 @@ func FFT(this *Matrix.Matrix, N int) (*Matrix.Matrix, error) {
 	if N&(N-1) == 0 {
 		tf := TwiddleFactors(N, false)
 
-		Xr := FFT_ct2(this, N, 1, &tf)
+		Xr := FFT_ct3(this, N, 1, &tf)
 
 		return Xr, nil
 	}
@@ -96,10 +96,8 @@ func FFT_ct2(this *Matrix.Matrix, N, skip int, tf *[]complex128) *Matrix.Matrix 
 
 	Xr := Matrix.NullMatrixP(N, this.GetNColumns())
 	Scratch := Matrix.NullMatrixP(N, this.GetNColumns())
-	//	RowTemp := Matrix.NullMatrixP(1, this.GetNColumns())
 
 	var E, D, Xp, Xstart *Matrix.Matrix
-
 	var evenIteration bool
 
 	if N%2 == 0 {
@@ -123,7 +121,6 @@ func FFT_ct2(this *Matrix.Matrix, N, skip int, tf *[]complex128) *Matrix.Matrix 
 		}
 
 		skip := N / (2 * n)
-
 		Xp = Xstart
 
 		for k := 0; k != n; k++ {
@@ -140,6 +137,93 @@ func FFT_ct2(this *Matrix.Matrix, N, skip int, tf *[]complex128) *Matrix.Matrix 
 				E = E.MatrixWithoutFirstRows(1)
 			}
 			E = E.MatrixWithoutFirstRows(skip)
+		}
+		E = Xstart
+		evenIteration = !evenIteration
+	}
+	return Scratch
+}
+
+func FFT_ct3(this *Matrix.Matrix, N, skip int, tf *[]complex128) *Matrix.Matrix {
+
+	Xr := Matrix.NullMatrixP(N, this.GetNColumns())
+	Scratch := Matrix.NullMatrixP(N, this.GetNColumns())
+
+	var E, D, Xp, Xstart *Matrix.Matrix
+	var evenIteration bool
+
+	if N%2 == 0 {
+		evenIteration = true
+	} else {
+		evenIteration = false
+	}
+
+	if N == 1 {
+		Xr.SetRow(1, this.GetReferenceRow(1))
+	}
+
+	E = this
+
+	for n := 1; n < N; n *= 2 {
+
+		if evenIteration {
+			Xstart = Scratch
+		} else {
+			Xstart = Xr
+		}
+
+		skip := N / (2 * n)
+		Xp = Xstart
+
+		for k := 0; k != n; k++ {
+
+			var Aux = func(m0, m1 int, Xp, E, D *Matrix.Matrix) {
+
+				println("-", m0)
+				Xp = Xp.MatrixWithoutFirstRows(m0)
+				E = E.MatrixWithoutFirstRows(m0)
+				//D = E.MatrixWithoutFirstRows(skip)
+
+				for m := m0; m < m1; m++ {
+					D = E.MatrixWithoutFirstRows(skip)
+					D.ScalarRow(1, (*tf)[skip*k])
+
+					sr, rr, _ := Matrix.Sum_Sustract(E.GetReferenceRow(1), D.GetReferenceRow(1))
+
+					Xp.SetRow(1, sr)
+					Xp.SetRow(N/2+1, rr)
+
+					Xp = Xp.MatrixWithoutFirstRows(1)
+
+					println("E", E.ToString())
+					E = E.MatrixWithoutFirstRows(1)
+
+				}
+
+			}
+
+			mm := skip / 2
+			m0 := 0
+			//m1 := skip
+
+			go Aux(m0, mm, Xp, E, D)
+			//println("->E", E.ToString(), ">XP", Xp.ToString())
+			//go Aux(mm, m1, Xp, E, D)
+
+			//for m := 0; m != skip; m++ {
+			//	D = E.MatrixWithoutFirstRows(skip)
+			//	D.ScalarRow(1, (*tf)[skip*k])
+
+			//	sr, rr, _ := Matrix.Sum_Sustract(E.GetReferenceRow(1), D.GetReferenceRow(1))
+
+			//	Xp.SetRow(1, sr)
+			//	Xp.SetRow(N/2+1, rr)
+
+			//	Xp = Xp.MatrixWithoutFirstRows(1)
+			//	E = E.MatrixWithoutFirstRows(1)
+			//}
+			E = E.MatrixWithoutFirstRows(skip)
+
 		}
 		E = Xstart
 		evenIteration = !evenIteration

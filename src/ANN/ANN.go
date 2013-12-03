@@ -10,12 +10,12 @@ type ANN struct {
 	Activation func(complex128) complex128
 }
 
-func CreateANN(NeuronsByLayer []int, Inputs int, Act func(complex128) complex128) ANN {
+func CreateANN(NeuronsByLayer []int, Inputs int, Activation func(complex128) complex128) ANN {
 	var out ANN
 	out.Layers = make([]Matrix.Matrix, len(NeuronsByLayer), len(NeuronsByLayer))
 
 	out.Inputs = Inputs
-	out.Activation = Act
+	out.Activation = Activation
 
 	m := Inputs
 	for i := 0; i < (len(NeuronsByLayer)); i++ {
@@ -34,14 +34,14 @@ func (this *ANN) ForwardPropagation(In Matrix.Matrix) (Output *Matrix.Matrix) {
 
 		sTemp := In.Copy()
 
-		sTemp = sTemp.AddColumn(*Matrix.I(1)) //Add  a new row for a Gain Weight
+		sTemp = sTemp.AddColumn(Matrix.I(1)) //Add  a new row for a Gain Weight
 
 		for i := 0; i < len(this.Layers); i++ {
 
-			sTemp = Matrix.Product(*sTemp, (this.Layers[i]))
+			sTemp = Matrix.Product(sTemp, (this.Layers[i]))
 
 			if i < len(this.Layers)-1 {
-				sTemp = sTemp.AddColumn(*Matrix.I(1)) //Add  a new row for a Gain Weight
+				sTemp = sTemp.AddColumn(Matrix.I(1)) //Add  a new row for a Gain Weight
 			}
 
 			sTemp = sTemp.Apply(this.Activation) //apply the functions of activation
