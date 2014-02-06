@@ -26,6 +26,27 @@ func NullMatrix(m int, n int) *Matrix {
 	return &out
 }
 
+func (this *Matrix) ZeroMatrix() *Matrix {
+	A := make([]complex128, this.m*this.n, this.m*this.n)
+	var out Matrix
+	out.A = A
+	out.m = this.m
+	out.n = this.n
+	return &out
+}
+
+func OnesMatrix(m int, n int) *Matrix {
+	A := make([]complex128, m*n, m*n)
+	var out Matrix
+	out.A = A
+	out.m = m
+	out.n = n
+	for i := 1; i < m*n; i++ {
+		A[i] = complex(1.0, 0)
+	}
+	return &out
+}
+
 // return a square Matrix nxn  and one's in the main diagonal
 func I(n int) *Matrix {
 	out := NullMatrixP(n, n)

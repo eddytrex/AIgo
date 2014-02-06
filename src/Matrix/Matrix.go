@@ -72,6 +72,33 @@ func RandomMatrix(m, n int) *Matrix {
 	return out
 }
 
+// fix all elements of a matrix m*n to a Value
+func FixValueMatrix(m, n int, Value float64) *Matrix {
+	out := NullMatrixP(m, n)
+	for i := 1; i <= out.m; i++ {
+		for j := 1; j <= out.n; j++ {
+
+			out.SetValue(i, j, complex(Value, 0))
+
+		}
+	}
+	return out
+
+}
+
+func RandomRealMatrix(m, n int, Range float64) *Matrix {
+	out := NullMatrixP(m, n)
+	rand.Seed(time.Now().UTC().UnixNano())
+	for i := 1; i <= out.m; i++ {
+		for j := 1; j <= out.n; j++ {
+
+			out.SetValue(i, j, complex(rand.Float64()*Range, 0))
+
+		}
+	}
+	return out
+}
+
 // return a string with the values of the Matrix
 func (this *Matrix) ToString() string {
 	var out string

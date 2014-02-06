@@ -116,7 +116,17 @@ func (this *Matrix) MatrixWithoutRow(i int) *Matrix {
 	i = i - 1
 
 	At = append(At[:i*this.n], At[(i+1)*this.n:]...)
-	//println("at",this.m-1)
+	out.A = At
+	return out
+}
+
+func (this *Matrix) MatrixWithoutLastRow() *Matrix {
+	out := NullMatrixP(this.m-1, this.n)
+	At := make([]complex128, len(this.A))
+	copy(At, this.A)
+	i := this.m - 1
+
+	At = append(At[:i*this.n], At[(i+1)*this.n:]...)
 	out.A = At
 	return out
 }

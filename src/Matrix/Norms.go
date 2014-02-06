@@ -7,7 +7,7 @@ import (
 	"runtime"
 )
 
-func (this *Matrix) InfinityNorm() complex128 {
+func (this *Matrix) InfinityNorm() float64 {
 	var out complex128
 	out = 0
 
@@ -19,7 +19,7 @@ func (this *Matrix) InfinityNorm() complex128 {
 		}
 	}
 
-	return out
+	return cmplx.Abs(out)
 }
 
 // func (this *Matrix) FrobeniusNorm()complex128{
@@ -44,6 +44,14 @@ func (this *Matrix) FrobeniusNorm() float64 {
 	v := <-sum
 
 	return math.Sqrt(cmplx.Abs(v))
+}
+
+func (this *Matrix) TaxicabNorm() float64 {
+	sum := make(chan complex128, 1)
+	this.sumApplyFunction(0, len(this.A), sum, func(a complex128) float64 { return cmplx.Abs(a) * cmplx.Abs(a) })
+
+	v := <-sum
+	return cmplx.Abs(v)
 }
 
 func (this *Matrix) sumApplyFunction(i0, i1 int, pSum chan<- complex128, f func(complex128) float64) {
