@@ -13,11 +13,15 @@ func main() {
 		return 1 / (1 + cmplx.Exp(-x))
 	}
 
+	activationDerviate := func(x complex128) complex128 {
+		return (1 / (1 + cmplx.Exp(-x))) * (1 - (1 / (1 + cmplx.Exp(-x))))
+	}
+
 	l := make([]int, 2)
 	l[0] = 2
 	l[1] = 1
 
-	ann := ANN.CreateANN(2, l, activation)
+	ann := ANN.CreateANN(2, l, activation, activationDerviate)
 
 	p1 := Matrix.NullMatrix(2, 1)
 	p1.SetValue(1, 1, 1.0)

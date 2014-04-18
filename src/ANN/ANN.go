@@ -5,9 +5,9 @@ import (
 
 	"fmt"
 
-//"math/cmplx"
+	//"math/cmplx"
 
-//"math"
+	//"math"
 )
 
 type ANN struct {
@@ -35,7 +35,7 @@ type ANN struct {
 	Derivate   func(complex128) complex128
 }
 
-func CreateANN(Inputs int, NeuronsByLayer []int, Act func(complex128) complex128) ANN {
+func CreateANN(Inputs int, NeuronsByLayer []int, Act func(complex128) complex128, Derivate func(complex128) complex128) ANN {
 
 	var out ANN
 
@@ -52,6 +52,7 @@ func CreateANN(Inputs int, NeuronsByLayer []int, Act func(complex128) complex128
 	out.Outputs = NeuronsByLayer[len(NeuronsByLayer)-1]
 
 	out.Activation = Act
+	out.Derivate = Derivate
 
 	m := Inputs
 	for i := 0; i < (len(NeuronsByLayer)); i++ {
@@ -89,27 +90,34 @@ func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matr
 		AsDerviate = &AsDerviate1
 
 		sTemp := In.Transpose()
+		holeInput := sTemp.Copy()
 		As1[0] = sTemp.Transpose()
 
 		//Derivate
-		sutract, _ := Matrix.Sustract(Matrix.OnesMatrix(As1[0].GetMRows(), 1), As1[0])
-		derivate := Matrix.DotMultiplication(As1[0], sutract)
-		AsDerviate1[0] = derivate
+		//sutract, _ := Matrix.Sustract(Matrix.OnesMatrix(As1[0].GetMRows(), 1), As1[0])
+		//derivate := Matrix.DotMultiplication(As1[0], sutract)
+		derivate := holeInput.Apply(this.Derivate)
+
+		AsDerviate1[0] = derivate.Transpose()
 
 		//sTemp = sTemp.AddColumn(Matrix.I(1)) //Add  a new column for a Bias Weight
 
 		for i := 0; i < len(this.Weights); i++ {
 			sTemp = Matrix.Product(sTemp, (this.Weights[i]))
 			//apply the activation functions
+			holeInput := sTemp.Copy()
 			sTemp = sTemp.Apply(this.Activation)
 
 			//sTemp = sTemp.AddColumn(Matrix.I(1)) //Add  a new column for a Bias Weight
 			(*As)[i+1] = sTemp.Transpose()
 
 			//Derivate
-			sutract, _ := Matrix.Sustract(Matrix.OnesMatrix((*As)[i+1].GetMRows(), 1), (*As)[i+1])
-			derivate := Matrix.DotMultiplication((*As)[i+1], sutract)
-			(*AsDerviate)[i+1] = derivate
+			//sutract, _ := Matrix.Sustract(Matrix.OnesMatrix((*As)[i+1].GetMRows(), 1), (*As)[i+1])
+			//derivate := Matrix.DotMultiplication((*As)[i+1], sutract)
+
+			derivate := holeInput.Apply(this.Derivate)
+
+			(*AsDerviate)[i+1] = derivate.Transpose()
 
 		}
 		Asf := sTemp.Copy()
