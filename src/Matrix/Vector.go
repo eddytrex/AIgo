@@ -1,6 +1,7 @@
 package Matrix
 
 import (
+	//	"fmt"
 	"math/cmplx"
 	"runtime"
 )
@@ -61,7 +62,6 @@ func DotProduct(A, B *Matrix) float64 {
 }
 
 func DotMultiplication(A, B *Matrix) *Matrix {
-
 	if A.n == B.n && A.m == B.m {
 		out := NullMatrixP(A.m, A.n)
 		done := make(chan bool)

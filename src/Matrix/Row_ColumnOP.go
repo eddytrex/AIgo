@@ -1,5 +1,9 @@
 package Matrix
 
+import (
+	"math/cmplx"
+)
+
 //return a given row of a Matrix in Matrix 1*n
 func (this *Matrix) GetRow(i int) *Matrix {
 	out := NullMatrixP(1, this.n)
@@ -291,7 +295,7 @@ func (this *Matrix) GetSubMatrix(i, j, r, c int) *Matrix {
 // return the sum all elements of a vector a column
 func (this *Matrix) SumVectorColumn() complex128 {
 	var sum complex128
-	sum = 0
+	sum = complex(0.0, 0.0)
 	if this.m == 1 {
 		for j := 0; j < this.n; j++ {
 			sum = sum + this.A[j]
@@ -302,7 +306,7 @@ func (this *Matrix) SumVectorColumn() complex128 {
 
 func (this *Matrix) sumColumn(i int) complex128 {
 	var sum complex128
-	sum = 0
+	sum = complex(0.0, 0.0)
 	if i <= this.n && i > 0 {
 		for j := 1; j < this.m; j++ {
 			sum += this.GetValue(i, j)
@@ -312,9 +316,21 @@ func (this *Matrix) sumColumn(i int) complex128 {
 	return sum
 }
 
+func (this *Matrix) sumAbsValueColumn(i int) float64 {
+	var sum float64
+	sum = 0
+	if i <= this.n && i > 0 {
+		for j := 1; j < this.m; j++ {
+			sum += cmplx.Abs(this.GetValue(i, j))
+		}
+	}
+
+	return sum
+}
+
 func (this *Matrix) sumRow(j int) complex128 {
 	var sum complex128
-	sum = 0
+	sum = complex(0.0, 0.0)
 	if j <= this.m && j > 0 {
 		for i := 1; i < this.n; i++ {
 			sum += this.GetValue(i, j)

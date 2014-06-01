@@ -62,15 +62,15 @@ func CreateANN(Inputs int, NeuronsByLayer []int, Act func(complex128) complex128
 		// one row extra for Bias weights, we need to change to random values for this matrixes
 		//temp := Matrix.RandomRealMatrix(m+1, n)
 
-		out.Weights[i] = Matrix.RandomRealMatrix(m, n, 1.2)
-		out.BestWeightsFound[i] = Matrix.NullMatrixP(m, n)
-		out.LearningRates[i] = Matrix.FixValueMatrix(m, n, 0.0001)
+		out.Weights[i] = Matrix.RandomRealMatrix(m+1, n, 1.2)
+		out.BestWeightsFound[i] = Matrix.NullMatrixP(m+1, n)
+		out.LearningRates[i] = Matrix.FixValueMatrix(m+1, n, 0.0001)
 
 		//tempdelta := Matrix.NullMatrix(m+1, n)
-		out.ð[i] = Matrix.NullMatrix(m, n)
+		out.ð[i] = Matrix.NullMatrix(m+1, n)
 
-		out.Δ[i] = Matrix.NullMatrixP(m, n)
-		out.Δ1[i] = Matrix.NullMatrixP(m, n)
+		out.Δ[i] = Matrix.NullMatrixP(m+1, n)
+		out.Δ1[i] = Matrix.NullMatrixP(m+1, n)
 		m = n
 
 	}
@@ -90,25 +90,30 @@ func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matr
 		AsDerviate = &AsDerviate1
 
 		sTemp := In.Transpose()
+
+		//Add  a new column for a Bias Weight
+		sTemp = sTemp.AddColumn(Matrix.I(1))
+
 		holeInput := sTemp.Copy()
 		As1[0] = sTemp.Transpose()
 
 		//Derivate
 		//sutract, _ := Matrix.Sustract(Matrix.OnesMatrix(As1[0].GetMRows(), 1), As1[0])
 		//derivate := Matrix.DotMultiplication(As1[0], sutract)
+
 		derivate := holeInput.Apply(this.Derivate)
 
 		AsDerviate1[0] = derivate.Transpose()
 
-		//sTemp = sTemp.AddColumn(Matrix.I(1)) //Add  a new column for a Bias Weight
-
 		for i := 0; i < len(this.Weights); i++ {
 			sTemp = Matrix.Product(sTemp, (this.Weights[i]))
+
 			//apply the activation functions
 			holeInput := sTemp.Copy()
 			sTemp = sTemp.Apply(this.Activation)
 
-			//sTemp = sTemp.AddColumn(Matrix.I(1)) //Add  a new column for a Bias Weight
+			//Add  a new column for a Bias Weight
+			sTemp = sTemp.AddColumn(Matrix.I(1))
 			(*As)[i+1] = sTemp.Transpose()
 
 			//Derivate
@@ -124,7 +129,7 @@ func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matr
 
 		//Asf = Asf.AddColumn(Matrix.I(1))
 		(*As)[len(As1)-1] = Asf.Transpose()
-		Output = sTemp.Transpose()
+		Output = sTemp.Transpose().MatrixWithoutLastRow()
 		return As, AsDerviate, Output
 	}
 	return nil, nil, nil
@@ -142,17 +147,34 @@ func (this *ANN) BackPropagation(As, AsDerviate *[](*Matrix.Matrix), ForwardOutp
 		A := (*As)[i]
 		Aderviate := (*AsDerviate)[i]
 
+		var ðtemp *Matrix.Matrix
+		if i == len(this.Weights)-1 {
+			ðtemp = this.ð[i+1].Transpose()
+		} else {
+			ðtemp = this.ð[i+1].MatrixWithoutLastRow().Transpose()
+		}
+
 		//Calc ð
-		this.ð[i] = Matrix.DotMultiplication(Matrix.Product(this.Weights[i], this.ð[i+1]), Aderviate)
+
+		//fmt.Println("ð(i+1)", this.ð[i+1].ToString())
+		//fmt.Println("W(i)", this.Weights[i].ToString())
+
+		Product := Matrix.Product(this.Weights[i], ðtemp.Transpose())
+		//fmt.Println("Product", i, " ", Product.ToString())
+
+		this.ð[i] = Matrix.DotMultiplication(Product, Aderviate.AddRowsToDown(Matrix.I(1)))
 
 		//Calc of Derivate with respect to the Weights
-		Dw := Matrix.Product(A, this.ð[i+1].Transpose())
+
+		//ðtemp:= i==len(this.Weights) - 1? this.ð[i+1].Transpose() : this.ð[i+1].MatrixWithoutLastRow().Transpose()
+		Dw := Matrix.Product(A, ðtemp)
 
 		this.Δ[i], _ = Matrix.Sum(this.Δ[i], Dw)
 	}
 
 	return
 }
+
 func (this *ANN) CleanΔ() {
 	for i := 0; i < len(this.Weights); i++ {
 
@@ -163,9 +185,6 @@ func (this *ANN) CleanΔ() {
 }
 func (this *ANN) UpdateWeights(length float64, changeBeasWeights bool) {
 
-	//u := 1.1
-	//d := 1.0 / u
-
 	for i := 0; i < len(this.Weights); i++ {
 
 		if changeBeasWeights {
@@ -173,22 +192,6 @@ func (this *ANN) UpdateWeights(length float64, changeBeasWeights bool) {
 		}
 
 		D, _ := Matrix.Sum(this.Δ[i].Scalar(complex(-this.η, 0)), this.Δ1[i].Scalar(complex(this.α, 0)))
-
-		//D := Matrix.DotMultiplication(this.Δ[i], this.Layers[i]).Scalar(complex(-this.η/length, 0))
-		//D := this.Δ[i]
-		//this.Δ[i] = D
-
-		//a := Matrix.DotMultiplication(this.Δ[i], this.Δ1[i])
-		//f := func(x, y complex128) complex128 {
-		//	if real(y) >= 0 {
-		//		x = x * complex(u, 0)
-		//	} else {
-		//		x = x * complex(d, 0)
-		//	}
-		//	return x
-		//}
-		//this.LearningRates[i] = Matrix.ApplyFunctionXY(this.LearningRates[i], a, f).Scalar(complex(-1, 0))
-		//D = Matrix.DotMultiplication(this.LearningRates[i], D)
 
 		this.Weights[i], _ = Matrix.Sum(this.Weights[i], D)
 
@@ -210,6 +213,7 @@ func (this *ANN) Train(Patters []*Matrix.Matrix, Results []*Matrix.Matrix, α, �
 	this.η = η
 
 	Error := 1.0
+	//LastError := 0.0
 
 	flen := float64(len(Patters))
 

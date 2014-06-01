@@ -64,35 +64,6 @@ func (this *Matrix) LUDec() (L *Matrix, U *Matrix, P *Matrix) {
 	return
 }
 
-// LU Decomposition of a Matrix
-// func (this *Matrix) LUDec()(L *Matrix, U *Matrix){
-//   if(this.m==this.n){
-//    U:=this.Copy()
-//    L:=I(this.n)
-//
-//    var UAnt complex128
-//
-//    for k:=1;k<=this.m;k++{
-//
-//      for i:=k+1;i<=this.m;i++{
-//
-// 	L.SetValue(i,k,U.GetValue(i,k)/U.GetValue(k,k))
-//         for j:=1;j<=this.n;j++{
-//
-// 	 UAnt=U.GetValue(i,j)-U.GetValue(k,j)*L.GetValue(i,k)
-// 	 U.SetValue(i,j,UAnt)
-//
-//       }
-//     }
-//    }
-//    for i:=1;i<=this.m;i++{
-//      L.SetValue(i,i,1)
-//    }
-//    return L,U
-//   }
-//   return nil,nil
-// }
-
 //QR Decomposition using  Householder reflections
 func (this *Matrix) QR() (Q1, R1 *Matrix) {
 	n := this.n //rows
@@ -181,7 +152,7 @@ func (this *Matrix) QRDec() (Q1, R1 *Matrix) {
 	return Q, R
 }
 
-//TODO esto se pude mejorar
+//TODO this can be improve
 // Set a matrix in the position beginin in PosI,PosI on a Identity Matrix
 
 func SetSubMatrixToI(n int, posI int, pQ *Matrix) *Matrix {

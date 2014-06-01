@@ -7,35 +7,21 @@ import (
 	"runtime"
 )
 
+//Also know as Chebyshev norm, Uniform norm
 func (this *Matrix) InfinityNorm() float64 {
-	var out complex128
-	out = 0
+	var out float64
+	out = 0.0
 
-	out = this.sumColumn(1)
+	out = this.sumAbsValueColumn(1)
 	for i := 2; i < this.m; i++ {
-		temp := this.sumColumn(i)
-		if cmplx.Abs(temp) > cmplx.Abs(out) {
+		temp := this.sumAbsValueColumn(i)
+		if math.Abs(temp) > math.Abs(out) {
 			out = temp
 		}
 	}
 
-	return cmplx.Abs(out)
+	return math.Abs(out)
 }
-
-// func (this *Matrix) FrobeniusNorm()complex128{
-//   var out complex128
-//   out=0;
-//   if (this.m==1||this.n==1){
-//
-//     for i:=0;i<len(this.A);i++{
-//        out=out+this.A[i]*this.A[i]
-//     }
-//
-//     out=math.Sqrt(out)
-//   }
-//
-//   return out
-// }
 
 func (this *Matrix) FrobeniusNorm() float64 {
 	sum := make(chan complex128, 1)
@@ -48,7 +34,7 @@ func (this *Matrix) FrobeniusNorm() float64 {
 
 func (this *Matrix) TaxicabNorm() float64 {
 	sum := make(chan complex128, 1)
-	this.sumApplyFunction(0, len(this.A), sum, func(a complex128) float64 { return cmplx.Abs(a) * cmplx.Abs(a) })
+	this.sumApplyFunction(0, len(this.A), sum, func(a complex128) float64 { return cmplx.Abs(a) })
 
 	v := <-sum
 	return cmplx.Abs(v)

@@ -138,17 +138,17 @@ func (this *Matrix) ToStringAbs() string {
 func (this *Matrix) TriangularLower() bool {
 	var out bool
 	out = false
-	bandera := true
+	flag := true
 	if this.n == this.m {
-		for i := 1; i <= this.m && bandera; i++ {
-			for j := 1; j <= this.n && bandera; j++ {
-				if i < j && this.GetValue(i, j) != 0 && bandera {
-					bandera = false
+		for i := 1; i <= this.m && flag; i++ {
+			for j := 1; j <= this.n && flag; j++ {
+				if i < j && this.GetValue(i, j) != 0 && flag {
+					flag = false
 				}
 			}
 		}
 	}
-	out = bandera
+	out = flag
 	return out
 }
 
@@ -156,17 +156,17 @@ func (this *Matrix) TriangularLower() bool {
 func (this *Matrix) TriangularUpper() bool {
 	var out bool
 	out = false
-	bandera := true
+	flag := true
 	if this.n == this.m {
-		for i := 1; i <= this.m && bandera; i++ {
-			for j := 1; j <= this.n && bandera; j++ {
-				if i > j && this.GetValue(i, j) != 0 && bandera {
-					bandera = false
+		for i := 1; i <= this.m && flag; i++ {
+			for j := 1; j <= this.n && flag; j++ {
+				if i > j && this.GetValue(i, j) != 0 && flag {
+					flag = false
 				}
 			}
 		}
 	}
-	out = bandera
+	out = flag
 	return out
 }
 
@@ -239,10 +239,6 @@ func (this *Matrix) Apply(f func(complex128) complex128) *Matrix {
 	done := make(chan bool, THRESHOLD)
 	applyR(0, len(out.A), this, out, f, done)
 	<-done
-	/*for i:=0;i<len(out.A);i++{
-	  newVal:=f(out.A[i])
-	  out.A[i]=newVal
-	}*/
 	return out
 }
 
@@ -564,8 +560,8 @@ func almostEqualComplex(a, b complex128) bool {
 	}
 
 	return almostFloat(a_R, b_R) && almostFloat(a_I, b_I)
-
 }
+
 func AlmostEqual(A, B *Matrix) bool {
 	if A.m == B.m && A.n == B.n {
 		done := make(chan bool)
@@ -619,9 +615,6 @@ func (this *Matrix) DiagonalDominance() bool {
 					return false
 				}
 			}
-			//if (cmplx.Abs(this.GetValue(i,i))>Sum){
-			//return false
-			//}
 		}
 		return true
 	}
