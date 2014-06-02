@@ -33,6 +33,11 @@ type ANN struct {
 	Outputs    int
 	Activation func(complex128) complex128
 	Derivate   func(complex128) complex128
+
+	CostFunction func(*Matrix.Matrix) *Matrix.Matrix
+
+	ActivationFunction   func(*Matrix.Matrix) complex128
+	DerivateOfActivation func(*Matrix.Matrix) complex128
 }
 
 func CreateANN(Inputs int, NeuronsByLayer []int, Act func(complex128) complex128, Derivate func(complex128) complex128) ANN {
@@ -81,6 +86,7 @@ func CreateANN(Inputs int, NeuronsByLayer []int, Act func(complex128) complex128
 	return out
 }
 
+//TODO the activation function and his Derviate has to be more general.. to implemente soft-max for example
 func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matrix.Matrix), Output *Matrix.Matrix) {
 	if In.GetMRows() == this.Inputs && In.GetNColumns() == 1 {
 		As1 := make([]*Matrix.Matrix, len(this.Weights)+1, len(this.Weights)+1)
@@ -141,6 +147,7 @@ func (this *ANN) BackPropagation(As, AsDerviate *[](*Matrix.Matrix), ForwardOutp
 
 	this.ð[len(this.ð)-1] = ð
 
+	//TODO refactor to do this more general  cost function has to be a field of ANN not hardcoded
 	this.AcumatedError, _ = Matrix.Sum(Matrix.DistanceSquare(ForwardOutput, Y), this.AcumatedError)
 
 	for i := len(this.Weights) - 1; i >= 0; i-- {
