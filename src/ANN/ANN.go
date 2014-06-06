@@ -32,8 +32,8 @@ type ANN struct {
 	Inputs  int
 	Outputs int
 
-	ActivationLayer func(*Matrix.Matrix) *Matrix.Matrix
-	DarivatemLayer  func(*Matrix.Matrix) *Matrix.Matrix
+	ActivationLayer         func(*Matrix.Matrix) *Matrix.Matrix
+	DarivateActivationLayer func(*Matrix.Matrix) *Matrix.Matrix
 
 	Activation func(complex128) complex128
 	Derivate   func(complex128) complex128
@@ -59,7 +59,7 @@ func CreateANN(Inputs int, NeuronsByLayer []int, Act func(*Matrix.Matrix) *Matri
 	out.Outputs = NeuronsByLayer[len(NeuronsByLayer)-1]
 
 	out.ActivationLayer = Act
-	out.DarivatemLayer = Derivate
+	out.DarivateActivationLayer = Derivate
 
 	out.CostFunction = Cost
 	out.DerviateCostFunction = DCost
@@ -113,7 +113,7 @@ func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matr
 		//derivate := Matrix.DotMultiplication(As1[0], sutract)
 
 		//derivate := holeInput.Apply(this.Derivate)
-		derivate := this.DarivatemLayer(holeInput)
+		derivate := this.DarivateActivationLayer(holeInput)
 
 		AsDerviate1[0] = derivate.Transpose()
 
@@ -134,7 +134,7 @@ func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matr
 			//sutract, _ := Matrix.Sustract(Matrix.OnesMatrix((*As)[i+1].GetMRows(), 1), (*As)[i+1])
 			//derivate := Matrix.DotMultiplication((*As)[i+1], sutract)
 
-			derivate := this.DarivatemLayer(holeInput)
+			derivate := this.DarivateActivationLayer(holeInput)
 			//derivate := holeInput.Apply(this.Derivate)
 
 			(*AsDerviate)[i+1] = derivate.Transpose()
