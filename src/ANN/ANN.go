@@ -29,18 +29,20 @@ type ANN struct {
 	α float64
 	η float64
 
-	Inputs     int
-	Outputs    int
+	Inputs  int
+	Outputs int
+
+	ActivationLayer func(*Matrix.Matrix) *Matrix.Matrix
+	DarivatemLayer  func(*Matrix.Matrix) *Matrix.Matrix
+
 	Activation func(complex128) complex128
 	Derivate   func(complex128) complex128
 
-	CostFunction func(*Matrix.Matrix) *Matrix.Matrix
-
-	ActivationFunction   func(*Matrix.Matrix) complex128
-	DerivateOfActivation func(*Matrix.Matrix) complex128
+	CostFunction         func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix
+	DerviateCostFunction func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix
 }
 
-func CreateANN(Inputs int, NeuronsByLayer []int, Act func(complex128) complex128, Derivate func(complex128) complex128) ANN {
+func CreateANN(Inputs int, NeuronsByLayer []int, Act func(*Matrix.Matrix) *Matrix.Matrix, Derivate func(*Matrix.Matrix) *Matrix.Matrix, Cost func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix, DCost func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix) ANN {
 
 	var out ANN
 
@@ -56,8 +58,11 @@ func CreateANN(Inputs int, NeuronsByLayer []int, Act func(complex128) complex128
 	out.Inputs = Inputs
 	out.Outputs = NeuronsByLayer[len(NeuronsByLayer)-1]
 
-	out.Activation = Act
-	out.Derivate = Derivate
+	out.ActivationLayer = Act
+	out.DarivatemLayer = Derivate
+
+	out.CostFunction = Cost
+	out.DerviateCostFunction = DCost
 
 	m := Inputs
 	for i := 0; i < (len(NeuronsByLayer)); i++ {
@@ -107,7 +112,8 @@ func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matr
 		//sutract, _ := Matrix.Sustract(Matrix.OnesMatrix(As1[0].GetMRows(), 1), As1[0])
 		//derivate := Matrix.DotMultiplication(As1[0], sutract)
 
-		derivate := holeInput.Apply(this.Derivate)
+		//derivate := holeInput.Apply(this.Derivate)
+		derivate := this.DarivatemLayer(holeInput)
 
 		AsDerviate1[0] = derivate.Transpose()
 
@@ -116,7 +122,9 @@ func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matr
 
 			//apply the activation functions
 			holeInput := sTemp.Copy()
-			sTemp = sTemp.Apply(this.Activation)
+			sTemp = this.ActivationLayer(sTemp)
+
+			//sTemp = sTemp.Apply(this.Activation)
 
 			//Add  a new column for a Bias Weight
 			sTemp = sTemp.AddColumn(Matrix.I(1))
@@ -126,7 +134,8 @@ func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matr
 			//sutract, _ := Matrix.Sustract(Matrix.OnesMatrix((*As)[i+1].GetMRows(), 1), (*As)[i+1])
 			//derivate := Matrix.DotMultiplication((*As)[i+1], sutract)
 
-			derivate := holeInput.Apply(this.Derivate)
+			derivate := this.DarivatemLayer(holeInput)
+			//derivate := holeInput.Apply(this.Derivate)
 
 			(*AsDerviate)[i+1] = derivate.Transpose()
 
@@ -142,13 +151,11 @@ func (this *ANN) ForwardPropagation(In *Matrix.Matrix) (As, AsDerviate *([]*Matr
 }
 
 func (this *ANN) BackPropagation(As, AsDerviate *[](*Matrix.Matrix), ForwardOutput *Matrix.Matrix, Y *Matrix.Matrix, flen float64) {
-
-	ð, _ := Matrix.Sustract(ForwardOutput, Y)
+	ð := this.DerviateCostFunction(ForwardOutput, Y)
 
 	this.ð[len(this.ð)-1] = ð
 
-	//TODO refactor to do this more general  cost function has to be a field of ANN not hardcoded
-	this.AcumatedError, _ = Matrix.Sum(Matrix.DistanceSquare(ForwardOutput, Y), this.AcumatedError)
+	this.AcumatedError, _ = Matrix.Sum(this.CostFunction(ForwardOutput, Y), this.AcumatedError)
 
 	for i := len(this.Weights) - 1; i >= 0; i-- {
 		A := (*As)[i]

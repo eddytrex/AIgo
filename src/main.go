@@ -15,7 +15,7 @@ func main() {
 	l[1] = 2
 	l[2] = 2
 
-	ann := ANN.CreateANN(2, l, ANN.Sigmoid, ANN.DSigmoid)
+	ann := ANN.CreateANN(2, l, ANN.SigmoidLayer, ANN.DSigmoidLayer, ANN.HalfDistance, ANN.DerivateHalfDistance)
 
 	p1 := Matrix.NullMatrix(2, 1)
 	p1.SetValue(1, 1, 1.0)
@@ -58,7 +58,7 @@ func main() {
 	ROutputs[2] = ro3
 	ROutputs[3] = ro4
 
-	ann.Train(Inputs, ROutputs, 0.01, 0.65, 0.0001, 10000)
+	ann.Train(Inputs, ROutputs, 0.01, 0.65, 0.0001, 1000)
 
 	_, _, Output := ann.ForwardPropagation(Inputs[0])
 	fmt.Println(Output.ToString())
