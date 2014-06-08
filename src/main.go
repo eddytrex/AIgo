@@ -15,7 +15,7 @@ func main() {
 	l[1] = 2
 	l[2] = 2
 
-	ann := ANN.CreateANN(2, l, ANN.SigmoidLayer, ANN.DSigmoidLayer, ANN.HalfDistance, ANN.DerivateHalfDistance, "/home/eddytrex/prueba")
+	ann := ANN.CreateANN(2, l, ANN.SigmoidLayer, ANN.DSigmoidLayer, ANN.HalfDistance, ANN.DerivateHalfDistance, "plot")
 
 	p1 := Matrix.NullMatrix(2, 1)
 	p1.SetValue(1, 1, 1.0)
