@@ -35,6 +35,5 @@ func DSoftmax(X *Matrix.Matrix) *Matrix.Matrix {
 	S, _ := Matrix.Sustract(Matrix.FixValueMatrix(X.GetNColumns(), X.GetNColumns(), 1.0), X)
 
 	YD := Matrix.DotMultiplication(Y, S)
-
 	return YD
 }

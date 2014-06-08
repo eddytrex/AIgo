@@ -3,7 +3,7 @@ package ANN
 import (
 	//"fmt"
 	"Matrix"
-	//"math/cmplx"
+	"math/cmplx"
 )
 
 func HalfDistance(T, O *Matrix.Matrix) *Matrix.Matrix {
@@ -17,4 +17,10 @@ func DerivateHalfDistance(T, O *Matrix.Matrix) *Matrix.Matrix {
 	r, _ := Matrix.Sustract(T, O)
 
 	return r
+}
+
+func CorssEntorpy(T, O *Matrix.Matrix) *Matrix.Matrix {
+	log := func(x complex128) complex128 { return cmplx.Log(x) }
+	return Matrix.DotMultiplication(T, O.Apply(log))
+
 }

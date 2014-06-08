@@ -5,10 +5,15 @@ import (
 
 	"fmt"
 
+	"os"
+
 	//"math/cmplx"
 
 	//"math"
 )
+
+const namesufix = "_layer.csv"
+const nameprefix = "f"
 
 type ANN struct {
 	Weights          []*Matrix.Matrix
@@ -40,9 +45,11 @@ type ANN struct {
 
 	CostFunction         func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix
 	DerviateCostFunction func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix
+
+	PathWeightsInCSV string
 }
 
-func CreateANN(Inputs int, NeuronsByLayer []int, Act func(*Matrix.Matrix) *Matrix.Matrix, Derivate func(*Matrix.Matrix) *Matrix.Matrix, Cost func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix, DCost func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix) ANN {
+func CreateANN(Inputs int, NeuronsByLayer []int, Act func(*Matrix.Matrix) *Matrix.Matrix, Derivate func(*Matrix.Matrix) *Matrix.Matrix, Cost func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix, DCost func(*Matrix.Matrix, *Matrix.Matrix) *Matrix.Matrix, path string) ANN {
 
 	var out ANN
 
@@ -63,7 +70,7 @@ func CreateANN(Inputs int, NeuronsByLayer []int, Act func(*Matrix.Matrix) *Matri
 
 	out.CostFunction = Cost
 	out.DerviateCostFunction = DCost
-
+	out.PathWeightsInCSV = path
 	m := Inputs
 	for i := 0; i < (len(NeuronsByLayer)); i++ {
 
@@ -223,6 +230,10 @@ func (this *ANN) Train(Patters []*Matrix.Matrix, Results []*Matrix.Matrix, α, �
 		return 1.0
 	}
 
+	if this.PathWeightsInCSV != "" {
+		this.NewFiles()
+	}
+
 	this.α = α
 	this.η = η
 
@@ -266,9 +277,51 @@ func (this *ANN) Train(Patters []*Matrix.Matrix, Results []*Matrix.Matrix, α, �
 
 		this.CleanΔ()
 
+		if this.PathWeightsInCSV != "" {
+			for l := 0; l < len(this.Weights); l++ {
+				this.SaveWeightsInPlainText(l, iteration)
+			}
+		}
+
 		fmt.Println("i:", iteration, Error)
 	}
-	//fmt.Println("i:", Error)
-	//fmt.Println("LR:(", this.LearningRates[len(this.LearningRates)-1].ToString())
 	return Error
+}
+
+func (this *ANN) NewFiles() {
+	for i := 0; i < len(this.Weights); i++ {
+		err := os.Remove(this.PathWeightsInCSV + "/" + nameprefix + fmt.Sprint(i) + namesufix)
+		fmt.Println(err)
+	}
+
+}
+
+func (this *ANN) SaveWeightsInPlainText(layerN int, ite int) {
+	layer := this.Weights[layerN]
+	m := layer.GetMRows()
+	n := layer.GetNColumns()
+
+	file, err := os.OpenFile(this.PathWeightsInCSV+"/"+nameprefix+fmt.Sprint(layerN)+namesufix, os.O_APPEND|os.O_WRONLY, 0600)
+
+	if err != nil {
+		file, _ = os.Create(this.PathWeightsInCSV + "/" + nameprefix + fmt.Sprint(layerN) + namesufix)
+	}
+
+	defer file.Close()
+
+	weigth := ""
+	for i := 1; i <= m; i++ {
+		for j := 1; j <= n; j++ {
+			if i == 1 && j == 1 {
+
+				weigth = "" + fmt.Sprintf("%d", ite) + "," + fmt.Sprintf("%.6f", real(layer.GetValue(i, j)))
+			} else {
+				weigth = weigth + " , " + fmt.Sprintf("%.6f", real(layer.GetValue(i, j)))
+			}
+		}
+	}
+	weigth = weigth + "\n"
+	if _, err = file.WriteString(weigth); err != nil {
+		panic(err)
+	}
 }

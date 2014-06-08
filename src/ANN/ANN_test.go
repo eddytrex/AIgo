@@ -1,21 +1,19 @@
-package main
+package ANN
 
 import (
 	"Matrix"
-	//"Search"
-	"ANN"
 	"fmt"
-	//	"math/cmplx"
+	"testing"
 )
 
-func main() {
+func XorFunction(t *testing.T) {
 
 	l := make([]int, 3)
 	l[0] = 2
 	l[1] = 2
 	l[2] = 2
 
-	ann := ANN.CreateANN(2, l, ANN.SigmoidLayer, ANN.DSigmoidLayer, ANN.HalfDistance, ANN.DerivateHalfDistance, "/home/eddytrex/prueba")
+	ann := CreateANN(2, l, SigmoidLayer, DSigmoidLayer, HalfDistance, DerivateHalfDistance)
 
 	p1 := Matrix.NullMatrix(2, 1)
 	p1.SetValue(1, 1, 1.0)
@@ -61,13 +59,16 @@ func main() {
 	ann.Train(Inputs, ROutputs, 0.01, 0.65, 0.0001, 1000)
 
 	_, _, Output := ann.ForwardPropagation(Inputs[0])
-	fmt.Println(Output.ToString())
 
+	fmt.Println(Output.ToString())
 	_, _, Output = ann.ForwardPropagation(Inputs[1])
+
 	fmt.Println(Output.ToString())
 	_, _, Output = ann.ForwardPropagation(Inputs[2])
+
 	fmt.Println(Output.ToString())
 	_, _, Output = ann.ForwardPropagation(Inputs[3])
+
 	fmt.Println(Output.ToString())
 
 }
