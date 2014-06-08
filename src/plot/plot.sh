@@ -3,7 +3,7 @@
 # note: you need GNU plot
 
 for FILE in *.csv; do 
-  ncolumns=`awk -F ',' '{print NF}' f0_layer.csv |head -n 1`
+  ncolumns=`awk -F ',' '{print NF}' ${FILE} |head -n 1`
   #echo "$ncolumns"
   c=""
   for i in $(seq 2 $ncolumns); do
